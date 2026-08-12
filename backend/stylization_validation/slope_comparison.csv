@@ -1,0 +1,10 @@
+Metric,Value
+Mean Slope Difference,-0.0267
+Median Slope Difference,-0.0040
+Standard Deviation,0.0806
+Maximum Absolute Difference,0.3000
+Total Phrases,20
+Identical Classifications,20
+Within 0.25 st/s,19
+Above 0.25 st/s,1
+Above 0.5 st/s,0
