@@ -1,0 +1,421 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: 'Source Serif 4', Georgia, Cambria, 'Times New Roman', Times, serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+  /*
+   Background: cool paper white #F7F8FA
+   Primary text/ink: #1E2530
+   Accent: highlighter yellow #F4C430
+  */
+  --color-paper: #F7F8FA;
+  --color-ink: #1E2530;
+  --color-ink-light: #4A5568;
+  --color-ink-lighter: #A0AEC0;
+  --color-highlight: #F4C430;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Accessibility focus styles */
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+/* 
+  Highlight sweep animation
+  Uses scaleX from 0 to 1 with transform-origin: left.
+*/
+.highlight-sweep {
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+}
+
+.highlight-sweep::before {
+  content: '';
+  position: absolute;
+  top: 15%;
+  left: -2px;
+  right: -2px;
+  bottom: 0;
+  background-color: var(--color-highlight);
+  z-index: -1;
+  transform-origin: left center;
+  transform: scaleX(0);
+  animation: sweep 0.25s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+  /* animation-delay injected via style per word */
+}
+
+@keyframes sweep {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .highlight-sweep::before {
+    animation: fade 0.25s ease-out forwards;
+    transform: scaleX(1);
+    opacity: 0;
+  }
+  
+  @keyframes fade {
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+/* Tooltip styles */
+.word-tooltip-container {
+  position: relative;
+  display: inline-block;
+}
+
+.word-tooltip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background-color: var(--color-ink);
+  color: var(--color-paper);
+  text-align: center;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  z-index: 10;
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+}
+
+.word-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -4px;
+  border-width: 4px;
+  border-style: solid;
+  border-color: var(--color-ink) transparent transparent transparent;
+}
+
+.word-tooltip-container:hover .word-tooltip {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(-4px);
+}
+
+/* ===========================================================================
+   Phrase intonation markers
+   Rendered inline after the last word of each phrase by PhraseIntonation.jsx.
+   Design mirrors word-tooltip so the two annotation layers feel cohesive.
+   =========================================================================== */
+
+.phrase-marker-container {
+  position: relative;
+  display: inline-block;
+  /* Small breathing room between the final word and the badge */
+  margin-left: 3px;
+  margin-right: 2px;
+  /* Sit at the same vertical midpoint as the surrounding text */
+  vertical-align: middle;
+}
+
+/* Arrow badge */
+.phrase-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 1px 4px;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+  /* Subtle by default — becomes vivid on hover */
+  opacity: 0.55;
+  cursor: default;
+  user-select: none;
+  transition: opacity 0.15s ease;
+}
+
+.phrase-marker-container:hover .phrase-marker {
+  opacity: 1;
+}
+
+/* Per-pattern colour tokens */
+.phrase-marker--rising  { color: #059669; background: rgba(5, 150, 105, 0.07); }
+.phrase-marker--falling { color: #3b82f6; background: rgba(59, 130, 246, 0.07); }
+.phrase-marker--level   { color: #94a3b8; background: rgba(148, 163, 184, 0.07); }
+.phrase-marker--insuf   { color: #9ca3af; background: transparent; opacity: 0.35; }
+
+/* Phrase tooltip — multi-row, wider than the word tooltip */
+.phrase-tooltip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background-color: var(--color-ink);
+  color: var(--color-paper);
+  border-radius: 4px;
+  padding: 7px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  white-space: nowrap;
+  z-index: 20;          /* above word-tooltip (z-index: 10) */
+  min-width: 170px;
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+/* Caret */
+.phrase-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -4px;
+  border-width: 4px;
+  border-style: solid;
+  border-color: var(--color-ink) transparent transparent transparent;
+}
+
+.phrase-marker-container:hover .phrase-tooltip {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(-4px);
+}
+
+/* Tooltip internals */
+.phrase-tooltip-header {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: 5px;
+  color: var(--color-paper);
+}
+
+.phrase-tooltip-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 4px 0;
+}
+
+.phrase-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  line-height: 1.6;
+}
+
+.phrase-tooltip-key {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.phrase-tooltip-val {
+  color: var(--color-paper);
+  font-weight: 600;
+}
+
+/* ===========================================================================
+   Pitch Contour canvas (PitchContour.jsx)
+   Two-layer canvas: static (contour, axes) + dynamic (playhead only).
+   =========================================================================== */
+
+.pitch-contour-container {
+  position: relative;
+  width: 100%;
+  height: 160px;    /* matches H constant in PitchContour.jsx */
+  cursor: crosshair;
+  outline: none;
+  overflow: hidden;
+  /* Ensure the container has a defined size for ResizeObserver */
+  display: block;
+}
+
+/* Keyboard focus ring — matches the existing :focus-visible rule on :root */
+.pitch-contour-container:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+/* Hover tooltip — updated via DOM ref, never via React setState */
+.pitch-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background-color: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  padding: 6px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 30;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  /* display toggled to 'block' / 'none' via DOM ref */
+}
+
+/* Tooltip typography */
+.pitch-tooltip-time {
+  font-size: 0.64rem;
+  color: rgba(255, 255, 255, 0.50);
+  margin-bottom: 2px;
+  letter-spacing: 0.02em;
+}
+
+.pitch-tooltip-st {
+  font-weight: 700;
+  font-size: 0.74rem;
+}
+
+.pitch-tooltip-hz {
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.60);
+}
+
+.pitch-tooltip-meta {
+  font-size: 0.64rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 3px;
+}
+
+/* Screen-reader only utility (used for aria-describedby content) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ===========================================================================
+   Prosody Panel — collapsible body (ProsodyPanel.jsx)
+
+   Uses the CSS grid-template-rows 0fr → 1fr trick for smooth height animation
+   without needing to know the content height in advance.
+
+   1. The outer (.prosody-panel-body) acts as the grid container.
+   2. The inner (.prosody-panel-inner) is the single grid child with
+      overflow:hidden — this is what gets clipped to 0 height when collapsed.
+   =========================================================================== */
+
+.prosody-panel-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.30s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prosody-panel-body--open {
+  grid-template-rows: 1fr;
+}
+
+.prosody-panel-inner {
+  overflow: hidden;
+}
+
+/* Chevron rotation */
+.prosody-chevron {
+  transition: transform 0.30s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Suppress animation for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .prosody-panel-body {
+    transition: none;
+  }
+  .prosody-chevron {
+    transition: none;
+  }
+}
+
+/* ===========================================================================
+   Legend — compact annotation key inside ProsodyPanel
+   =========================================================================== */
+
+.legend-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  align-items: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: default;
+}
+
+/* Fixed-width preview column keeps labels visually aligned */
+.legend-swatch-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 36px;
+}
+
+/* Stress preview — amber highlight-sweep background */
+.legend-preview-stress {
+  font-family: var(--font-serif);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0 2px;
+  background-color: var(--color-highlight);
+  color: var(--color-ink);
+  line-height: 1.3;
+}
+
+/* Pause preview — muted monospace dots */
+.legend-preview-pause {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--color-ink-lighter);
+  letter-spacing: 0.08em;
+}
+
+/* Rising / falling / level arrow badges — same tokens as phrase-marker in index.css */
+.legend-arrow {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+  line-height: 1.2;
+}
+
+.legend-arrow--rising  { color: #059669; }
+.legend-arrow--falling { color: #3b82f6; }
+.legend-arrow--level   { color: #94a3b8; }
+
+/* Legend text label */
+.legend-label {
+  font-family: var(--font-mono);
+  font-size: 0.70rem;
+  color: var(--color-ink-light);
+  white-space: nowrap;
+}
