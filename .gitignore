@@ -92,3 +92,26 @@ Thumbs.db
 *.tmp
 *.bak
 *.orig
+
+# ── Excluded: one-off diagnostic and debugging scripts ───────────────────────
+# These files exist locally but are not part of the repository.
+# The algorithms they investigated are now in pitch_analysis.py and
+# the decisions they informed are documented in FINAL_REPORT.md.
+backend/diagnose.py
+backend/diagnose_football.py
+backend/investigate_pause.py
+backend/probe_acoustic_gaps.py
+backend/trace_gap.py
+backend/investigate_intonation_window.py
+backend/rerun_phase3.py
+backend/phase3_gate.py
+backend/experiment_mse_mae.py
+backend/profile_scaling.py
+backend/compare_intonations.py
+backend/compare_whisper_vs_acoustic.py
+backend/compare_raw_vs_stylized_intonation.py
+
+# ── Excluded: unused Vite scaffold assets ────────────────────────────────────
+frontend/src/assets/react.svg
+frontend/src/assets/vite.svg
+frontend/src/assets/hero.png
