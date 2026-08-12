@@ -1,0 +1,21 @@
+Audio File,Phrase ID,Start Time,End Time,Raw Slope,Raw Class,Stylized Slope,Stylized Class,Slope Difference,Absolute Slope Difference
+example1_football.wav,1,0.000,4.840,-0.911,level,-0.901,level,0.010,0.010
+example2_football.wav,1,0.000,3.600,-0.304,level,-0.409,level,-0.105,0.105
+example2_noisy.wav,1,0.000,3.600,-0.462,level,-0.497,level,-0.035,0.035
+example3.wav,1,0.000,2.340,-1.856,falling,-1.758,falling,0.098,0.098
+example3.wav,2,4.380,9.620,0.596,level,0.610,level,0.014,0.014
+example3.wav,3,10.880,12.100,-4.281,falling,-4.292,falling,-0.011,0.011
+example3.wav,4,12.560,14.440,-3.060,falling,-3.057,falling,0.003,0.003
+example3.wav,5,15.580,18.040,0.979,level,0.871,level,-0.108,0.108
+example3.wav,6,18.660,22.600,-1.275,level,-1.275,level,0.000,0.000
+example3.wav,7,23.540,25.280,-3.427,falling,-3.433,falling,-0.006,0.006
+example3.wav,8,25.960,27.580,-7.262,falling,-7.385,falling,-0.123,0.123
+proxy_bug1_1700ms.wav,1,0.000,1.380,-4.444,falling,-4.462,falling,-0.018,0.018
+proxy_bug1_1700ms.wav,2,3.160,4.760,-1.042,level,-1.039,level,0.003,0.003
+proxy_bug2_780ms.wav,1,0.000,1.380,-4.444,falling,-4.462,falling,-0.018,0.018
+proxy_bug2_780ms.wav,2,2.280,2.500,-14.642,falling,-14.942,falling,-0.300,0.300
+proxy_bug2_780ms.wav,3,2.960,3.820,-6.328,falling,-6.266,falling,0.062,0.062
+test.wav,1,0.000,4.000,-0.216,level,-0.199,level,0.017,0.017
+test_synthetic_pause.wav,1,0.000,19.880,-0.000,level,-0.000,level,0.000,0.000
+test_two_phrases.wav,1,0.000,1.400,-4.784,falling,-4.800,falling,-0.016,0.016
+test_two_phrases.wav,2,2.860,4.400,-0.436,level,-0.438,level,-0.002,0.002
