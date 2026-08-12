@@ -1,0 +1,94 @@
+# ── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# ── Model weights (large binary files — download via download_weights.py) ────
+backend/WhiStress/whistress/weights/*.pt
+backend/WhiStress/whistress/weights/.cache/
+
+# ── Local audio test files ───────────────────────────────────────────────────
+*.wav
+*.weba
+*.webm
+*.mp3
+*.flac
+*.m4a
+*.ogg
+
+# ── Generated annotation outputs ─────────────────────────────────────────────
+*_annotation.json
+backend/output/
+backend/output_test/
+
+# ── Benchmark / research generated outputs ───────────────────────────────────
+backend/stylization_validation/plots/
+backend/stylization_validation/robustness_results.csv
+backend/external_evaluation/SBCSAE-preprocess/
+backend/external_evaluation/sbc_eval_results/
+backend/external_evaluation/sbc_test/
+backend/external_evaluation/sbc_transcripts/
+backend/external_evaluation/sbc_transcripts_stream/
+backend/external_evaluation/sbcsae_data/
+backend/external_evaluation/SBCSAE.zip
+backend/sbcsae_data/
+
+# ── Generated plots / images ──────────────────────────────────────────────────
+backend/*.png
+backend/external_evaluation/*.png
+backend/investigate_results*.json
+
+# ── Miscellaneous large/temporary backend files ───────────────────────────────
+backend/01.zip
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+backend/external_evaluation/*.log
+backend/external_evaluation/*.txt
+
+# ── Node.js / Frontend ───────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ── Secrets / Environment ─────────────────────────────────────────────────────
+.env
+.env.local
+.env.production
+.env.development
+*.env
+
+# ── IDE / OS metadata ────────────────────────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── Miscellaneous ─────────────────────────────────────────────────────────────
+*.tmp
+*.bak
+*.orig
