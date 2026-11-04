@@ -980,3 +980,46 @@ def realign_word_timestamps(
     corrected_tuples = [(c["word"], c["stress"], round(c["start"], 3), round(c["end"], 3)) for c in corrected]
     return corrected_tuples, pauses
 
+
+def build_pitch_contour(
+    pitch_times: np.ndarray,
+    pitch_f0: np.ndarray,
+    utterance_median_hz: Optional[float],
+    target_step_ms: float = 25.0,
+    k_array: Optional[np.ndarray] = None,
+    P_val: Optional[int] = None,
+) -> List[Dict[str, Any]]:
+    """
+    Builds downsampled pitch contour objects with semitones relative to utterance median Hz.
+    Optionally attaches DP-MAE stylization metadata (K, P).
+    """
+    import math
+    if len(pitch_times) == 0:
+        return []
+
+    frame_step_ms = PITCH_TIME_STEP * 1000.0          # 10 ms
+    stride = max(1, round(target_step_ms / frame_step_ms))   # ≈ 2–3
+
+    contour = []
+    for i in range(0, len(pitch_times), stride):
+        t = float(pitch_times[i])
+        f = float(pitch_f0[i])
+
+        if utterance_median_hz is None or np.isnan(f) or f <= 0:
+            semitone = None
+        else:
+            semitone = round(12.0 * math.log2(f / utterance_median_hz), 3)
+
+        point: Dict[str, Any] = {"time": round(t, 3), "semitone": semitone}
+
+        if k_array is not None and P_val is not None:
+            k = float(k_array[i])
+            if not np.isnan(k):
+                point["K"] = int(k)
+                point["P"] = P_val
+
+        contour.append(point)
+
+    return contour
+
+

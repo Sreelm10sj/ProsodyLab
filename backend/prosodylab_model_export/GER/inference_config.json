@@ -1,0 +1,18 @@
+{
+  "language": "GER",
+  "feature_extractor": "facebook/wav2vec2-base",
+  "feature_layer": 12,
+  "feature_dim": 768,
+  "audio_sample_rate": 16000,
+  "audio_channels": 1,
+  "pooling": "mean_across_syllable_frames",
+  "model_checkpoint": "artifacts/prosodylab_model_export/GER/model/final_lexirep_model.pt",
+  "prototypes_path": "artifacts/prosodylab_model_export/GER/anchors/prototypes_10d.npy",
+  "linguistic_constraint": "exactly_one_primary_stress_per_word",
+  "confidence_metric": "sigmoid_contrast_margin",
+  "supported_syllable_lengths": [
+    2,
+    3,
+    4
+  ]
+}
