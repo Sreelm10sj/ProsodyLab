@@ -1,8 +1,39 @@
-fastapi
-uvicorn
-python-multipart
-pydub
-soundfile
-praat-parselmouth
-PyWavelets
-scipy
+# =============================================================================
+# ProsodyLab backend — production requirements
+# Python 3.11.x required
+# Versions verified against the working local environment (2026-08-13).
+# =============================================================================
+
+# --- Web framework ---
+fastapi==0.139.2
+uvicorn==0.51.0
+python-multipart==0.0.32
+
+# --- ML core ---
+# NOTE for Oracle ARM64 deployment:
+#   Install torch and torchaudio FIRST with:
+#     pip install torch==2.5.1 torchaudio==2.5.1 \
+#         --index-url https://download.pytorch.org/whl/cpu
+#   Then run: pip install -r requirements.txt
+#   The local environment uses the CUDA build (2.5.1+cu121); the version
+#   pin (2.5.1) is identical — only the build variant differs.
+torch==2.5.1
+torchaudio==2.5.1
+transformers==4.52.2
+
+# --- Numerical / audio processing ---
+numpy==2.0.2
+scipy==1.17.1
+librosa==0.10.2.post1
+PyWavelets==1.9.0
+
+# --- Pitch extraction ---
+# On Linux ARM64: no pre-built wheel on PyPI; builds from source.
+# Requires: sudo apt install -y build-essential cmake python3.11-dev
+praat-parselmouth==0.4.7
+
+# --- Audio I/O ---
+# pydub requires ffmpeg on $PATH at runtime: sudo apt install -y ffmpeg
+# soundfile requires libsndfile1: sudo apt install -y libsndfile1
+pydub==0.25.1
+soundfile==0.14.0
