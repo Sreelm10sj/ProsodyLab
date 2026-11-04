@@ -50,8 +50,31 @@ backend/*.png
 backend/external_evaluation/*.png
 backend/investigate_results*.json
 
-# ── Miscellaneous large/temporary backend files ───────────────────────────────
+# ── Large archives & raw training corpora (exceeds GitHub limits / non-runtime) 
+*.zip
+backend/test.zip
 backend/01.zip
+backend/prosodylab_model_export/isle/
+backend/prosodylab_model_export/code and dataset/
+backend/prosodylab_model_export/anchorcode/
+backend/prosodylab_model_export/*.csv
+backend/prosodylab_model_export/*.md
+backend/prosodylab_model_export/*.json
+!backend/prosodylab_model_export/GER/**
+!backend/prosodylab_model_export/ITA/**
+!backend/prosodylab_model_export/lexirep_inference/**
+backend/prosodylab_model_export/**/__pycache__/
+backend/prosodylab_model_export/**/*.pyc
+backend/prosodylab_model_export/**/*.pyo
+deployment/
+
+# ── Dynamic runtime job sandboxes (preserve directory structure via .gitkeep) ─
+backend/training_jobs/*
+!backend/training_jobs/.gitkeep
+backend/batch_annotation_jobs/*
+!backend/batch_annotation_jobs/.gitkeep
+backend/logs/*
+!backend/logs/.gitkeep
 
 # ── Logs ─────────────────────────────────────────────────────────────────────
 *.log
@@ -63,6 +86,8 @@ backend/external_evaluation/*.txt
 frontend/node_modules/
 frontend/dist/
 frontend/dist-ssr/
+frontend-legacy/
+frontend-v2/
 *.local
 npm-debug.log*
 yarn-debug.log*
@@ -93,10 +118,7 @@ Thumbs.db
 *.bak
 *.orig
 
-# ── Excluded: one-off diagnostic and debugging scripts ───────────────────────
-# These files exist locally but are not part of the repository.
-# The algorithms they investigated are now in pitch_analysis.py and
-# the decisions they informed are documented in FINAL_REPORT.md.
+# ── Excluded: one-off diagnostic, evaluation & debugging scripts ──────────────
 backend/diagnose.py
 backend/diagnose_football.py
 backend/investigate_pause.py
@@ -110,8 +132,30 @@ backend/profile_scaling.py
 backend/compare_intonations.py
 backend/compare_whisper_vs_acoustic.py
 backend/compare_raw_vs_stylized_intonation.py
+backend/cache_preload.py
+backend/evaluate_commas.py
+backend/evaluate_fleurs_pauses.py
 
-# ── Excluded: unused Vite scaffold assets ────────────────────────────────────
-frontend/src/assets/react.svg
-frontend/src/assets/vite.svg
-frontend/src/assets/hero.png
+# ── Local report, paper, presentation & agent files ───────────────────────────
+Speech_Sense_*
+*.pdf
+*.docx
+clean_report.html
+humanized_report.html
+literature_survey.html
+speech_sense_*.html
+humanized_ch2_*.txt
+speech_sense_report_content.md
+build_*.py
+crop_*.py
+generate_*.py
+extract_*.py
+scratch_*.py
+askpass_*.py
+snippet_page_*.png
+full_page_*.png
+extracted_figures/
+katex_assets/
+PROFESSOR_DEMO_GUIDE.md
+docs/
+.agents/
