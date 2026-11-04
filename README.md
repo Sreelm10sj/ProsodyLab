@@ -78,9 +78,27 @@ The live research demonstration is hosted on institutional server infrastructure
 
 ---
 
-## 4. Application Interface & Workbenches
+## 4. Application Walkthrough & Video Demonstrations
 
-The ProsodyLab interface is organized into three primary workstations:
+The ProsodyLab interface provides interactive phonetics analysis and acoustic metric learning across dedicated workstations:
+
+### 4.1 Speech Prosody & Lexical Stress Analysis (`/analyze`)
+
+<video src="https://github.com/Sreelm10sj/ProsodyLab/raw/main/docs/assets/analyze.mp4" controls="controls" muted="muted" width="100%"></video>
+
+> **Analyze Flow Walkthrough:** Demonstrates navigating to the `/analyze` workbench, selecting input modalities (file upload, live microphone recording, or asynchronous batch ZIP processing), uploading a speech file, and running analysis. The interface displays the transcription with word-level prominence highlighting, syllable segmentation with acoustic contrast metrics, pitch contours with DP-MAE stylization, phrase-level intonation, and generates structured JSON/TXT annotations.
+
+---
+
+### 4.2 Unsupervised Metric Learning & Model Training (`/train`)
+
+<video src="https://github.com/Sreelm10sj/ProsodyLab/raw/main/docs/assets/train.mp4" controls="controls" muted="muted" width="100%"></video>
+
+> **Train Flow Walkthrough:** Demonstrates the self-training workflow on the `/train` workbench. The user uploads a speech dataset archive, scans for defensible acoustic anchor word pairs ($S_{\text{train}}$), executes IDEC metric learning with live epoch and linguistic compliance telemetry, and downloads the trained model bundle and prototype centroids in a deployable ZIP format.
+
+---
+
+### 4.3 Interface Workstations Summary
 
 | Workbench Destination | Route | Core Interaction & Functionality |
 | :--- | :---: | :--- |
@@ -291,6 +309,9 @@ ProsodyLab/
 │   ├── package.json
 │   └── vite.config.js               # Vite build configuration & API proxy
 ├── docs/                            # Comprehensive technical documentation
+│   ├── assets/                      # Screen walkthrough video assets (silent)
+│   │   ├── analyze.mp4
+│   │   └── train.mp4
 │   ├── ARCHITECTURE.md              # Deep system architecture & data flow
 │   ├── API_REFERENCE.md             # Complete OpenAPI REST specification
 │   ├── EVALUATION.md                # Empirical benchmarks & reproduction commands
