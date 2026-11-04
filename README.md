@@ -1,220 +1,390 @@
-# ProsodyLab: Acoustic Prosody, WhiStress & LexiRep Integration
+# ProsodyLab: End-to-End Speech Prosody Analysis & Acoustic Metric Learning
 
-> **A Research-Grade Speech Phonetics Workbench & Representation Learning System**  
-> *Combines deep acoustic foundation models with classical acoustic phonetics to detect lexical stress, segment syllables, analyze pitch intonation, and self-train domain-adapted prosody models.*
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%20%7C%203.11-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org/)
+[![PyTorch 2.5+](https://img.shields.io/badge/PyTorch-2.5+-EE4C2C.svg?style=flat&logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React 19](https://img.shields.io/badge/react-19.0-61DAFB.svg?style=flat&logo=react&logoColor=black)](https://react.dev/)
+[![Vite 5](https://img.shields.io/badge/vite-5.0-646CFF.svg?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-🌐 **Live Demo:** [https://aerospace-theology-refining.ngrok-free.dev/](https://aerospace-theology-refining.ngrok-free.dev/)
+> **A Research-Grade Phonetics Workbench & Deep Representation Learning System**  
+> *Integrates acoustic foundation models (Whisper, Wav2Vec 2.0) with classical acoustic phonetics to detect sentence prominence, classify syllable-level lexical stress via metric learning, stylize pitch contours via fast dynamic programming, and evaluate non-native English prosody.*
 
----
-
-## 1. Executive Summary & Research Motivation
-
-Modern Automatic Speech Recognition (ASR) systems (such as OpenAI Whisper) achieve exceptional word error rates, but they **discard acoustic prosody**—the rhythm, stress patterns, pause intervals, and intonation contours of spoken language. 
-
-In natural communication, prosody conveys:
-- **Lexical meaning and grammatical category** (e.g., *'OB-ject* [noun] vs. *ob-'JECT* [verb]).
-- **Information structure and emphasis** (prominence on contrastive or focus words).
-- **Discourse structure** (clause boundaries indicated by pitch resets and silent pauses).
-- **Speaker nativity and fluency** (second-language learners frequently exhibit non-canonical lexical stress placement).
-
-Prior speech tools either required manual Praat scripting with no deep learning integration, or relied on static text dictionary lookups (e.g., CMUdict), which fail to reflect how a speaker *actually uttered* a word.
-
-**ProsodyLab** bridges deep representation learning with classical acoustic phonetics:
-1. **WhiStress (Acoustic Prominence):** Extracts word-level lexical stress directly from audio using a fine-tuned Whisper-small decoder with a custom prominence classifier head.
-2. **Parselmouth Acoustic Pipeline:** Computes fundamental frequency ($F_0$), semitone pitch normalisation relative to utterance median, pause duration filtering, and phrase-level intonation slope classification ($↗$ rising, $↘$ falling, $→$ level, $\sim$ unvoiced).
-3. **Hybrid Syllable Segmentation Engine:** Partitions acoustic word spans into syllables using a high-precision combination of the ISLE lexical dictionary and a sonority-hierarchy rule engine for Out-Of-Vocabulary (OOV) words.
-4. **LexiRep (Syllable-Level Stress Metric Learning):** Projects Wav2Vec2 768-D representations into a 10-D metric space, classifying syllable stress via distance to learned acoustic prototypes without requiring text transcription.
-5. **Interactive Training Workbench:** Enables researchers to upload speech datasets, discover acoustic anchors using an unsupervised contrast scanner, and train adapted LexiRep models via iterative self-training with German (`GER`) and Italian (`ITA`) collaborator protocols.
+🌐 **Live Research Demonstration:** [https://aerospace-theology-refining.ngrok-free.dev/](https://aerospace-theology-refining.ngrok-free.dev/)  
+📁 **GitHub Repository:** [https://github.com/Sreelm10sj/ProsodyLab](https://github.com/Sreelm10sj/ProsodyLab)
 
 ---
 
-## 2. System Architecture
+## 1. Project Overview
 
-```
-                  ┌────────────────────────────────────────────────────────┐
-                  │                 FRONTEND (React 19 + Vite)              │
-                  │  / (Landing)    │   /analyze (Workbench)  │   /train   │
-                  │  GSAP Hero      │   Waveform & Karaoke    │   Training │
-                  │  Pitch Field    │   Live Vocalizer Orb    │   Monitor  │
-                  └───────────────────────────┬────────────────────────────┘
-                                              │ HTTP / JSON & Multipart
-                                              ▼
-                  ┌────────────────────────────────────────────────────────┐
-                  │                FASTAPI GATEWAY (Port 8000)             │
-                  │   /api/health            │   /api/transcribe           │
-                  │   /api/annotate          │   /api/lexirep/analyze      │
-                  │   /api/batch/*           │   /api/train/*              │
-                  └──────┬────────────────────┬────────────────────┬───────┘
-                         │                    │                    │
-         ┌───────────────▼────────┐  ┌────────▼───────────┐  ┌─────▼──────────────┐
-         │   Inference Engine     │  │ Syllable Engine    │  │ Worker Subprocesses│
-         │ - WhiStress Client     │  │ - ISLE Lexicon     │  │ - Batch Worker     │
-         │ - Parselmouth (Praat)  │  │ - Sonority Rules   │  │ - Training Worker  │
-         │ - Pitch Stylization    │  │ - Partitioner      │  │ - Anchor Scanner   │
-         │ - Wav2Vec2 / LexiRep   │  │                    │  │                    │
-         └────────────────────────┘  └────────────────────┘  └────────────────────┘
-```
+Automatic Speech Recognition (ASR) systems have attained remarkable word error rates, but standard architectures routinely **discard acoustic prosody**—the rhythm, syllable stress patterns, pause intervals, and melodic intonation of human speech.
+
+In natural spoken communication, prosodic cues convey essential linguistic and pedagogical information:
+- **Lexical contrast & category:** Distinguishing noun/verb pairs (e.g., *'OB-ject* vs. *ob-'JECT*).
+- **Information structure & sentence focus:** Identifying emphasized, prominent words in running discourse.
+- **Syntactic & phrase structure:** Marking clause boundaries via silent pause intervals and pitch resets.
+- **Second-Language (L2) Assessment:** Detecting non-native lexical stress placement and rhythm transfer that directly affect intelligibility.
+
+Traditional phonetics workflows require manual Praat scripting without modern representation learning, while text-only pronunciation dictionaries (e.g., CMUdict) cannot evaluate how a speaker *actually uttered* a phrase.
+
+**ProsodyLab** bridges self-supervised speech foundation models with classical acoustic phonetics into an end-to-end, reproducible analysis and learning platform:
+1. **Sentence-Level Prominence (WhiStress):** Predicts token-level sentence stress directly from speech using a fine-tuned Whisper-small decoder block and linear classification head (42.5 MB custom weights).
+2. **Syllable-Level Lexical Stress (LexiRep):** Maps Wav2Vec 2.0 representations into a 10-dimensional metric space to classify syllable lexical stress in polysyllabic words via distance to learned acoustic prototypes (441 KB model checkpoint).
+3. **Autonomous Syllable Engine:** A two-tier hierarchy combining an ISLE canonical dictionary lookup with a sonority-sequencing rule engine for out-of-vocabulary words, partitioned into equal-duration temporal intervals for zero-dependency runtime serving.
+4. **Fast DP-MAE Pitch Stylization:** Vectorized Dynamic Programming Minimum Absolute Error pitch stylization running **14.2&times; faster** than reference Praat implementations ($< 0.05$ semitones deviation).
+5. **Modern Phonetics Workbench:** An interactive React 19 single-page application featuring live Web Audio frequency vocalization, dynamic Canvas pitch contour rendering, synchronized karaoke transcriptions, and an unsupervised training workbench.
 
 ---
 
-## 3. Core Feature Highlights
+## 2. Live Research Demo & Institutional Hosting Status
 
-### 🎙️ 1. Live Audio-Reactive Frequency Visualizer
-- Driven directly in the browser via the HTML5 Web Audio API (`AudioContext` and `AnalyserNode`).
-- Computes 256-point FFT frequency bins in real time (60 FPS) to visualize voice activity, harmonic intensity, and volume dynamics with zero network latency.
+The live research demonstration is hosted on institutional server infrastructure and made publicly accessible via an ngrok secure tunnel:
 
-### 🔤 2. Word-Level Stress & Synchronized Karaoke
-- Whisper-based prominence prediction highlights stressed words directly in the transcript.
-- Custom waveform player synchronizes audio playback with text boundaries, illuminating words as the playhead advances.
+**Public Demo URL:** [https://aerospace-theology-refining.ngrok-free.dev/](https://aerospace-theology-refining.ngrok-free.dev/)
 
-### 🔬 3. Interactive Syllable Inspection Popover
-- Clicking any polysyllabic word opens an acoustic syllable breakdown (e.g., `ex · am · i · na · tion`).
-- Visualizes primary lexical stress assigned by the LexiRep acoustic prototype engine.
-- Displays model confidence and contrast metrics, and enables direct click-to-seek playback for individual syllables.
-
-### 📈 4. Pitch Contours & Intonation Slopes
-- **Acoustic Pitch Tracking:** Parselmouth autocorrelation tracks $F_0$ on 10ms frame intervals.
-- **Utterance-Median Normalization:** Converts raw Hertz into semitones ($12 \cdot \log_2(f / f_{\text{median}})$) to achieve speaker-independent intonation curves.
-- **Fast Dynamic Programming Stylization:** Custom L1 Minimum Absolute Error polygonal approximation running **14.2× faster** than legacy Praat algorithms.
-- **Intonation Categorization:** Classifies phrase slopes into Rising ($↗ \ge +4.0\text{ st/s}$), Falling ($↘ \le -4.0\text{ st/s}$), Level ($→$), or Unvoiced ($\sim$).
-
-### 📦 5. Batch Corpus Processing
-- Upload multi-audio archives (`.zip`) for automated asynchronous queue processing.
-- Background worker processes files sequentially without blocking web server interactivity.
-- Export standardized structured JSON annotations for an entire corpus in a single download.
-
-### 🧠 6. Unsupervised Anchor Discovery & Model Training
-- **Dataset Validation:** Checks sample counts, format integrity, and 768-D embedding dimensions.
-- **Anchor Scanner:** Discovers high-contrast bisyllabic anchor pairs (e.g., *'OB-ject* vs. *ob-'JECT*) using unsupervised acoustic variance.
-- **Self-Training Telemetry:** Live loss charts track convergence across iterations.
-- **Model Bundle Export:** Downloads trained PyTorch checkpoints (`final_lexirep_model.pt`), 10-D prototype vectors, and deployment configurations.
 
 ---
 
-## 4. Key Metrics & Benchmarks
+## 3. Key Capabilities & Features
 
-| Metric | Measured Value | Significance |
+### 🎙️ 1. Live Web Audio Frequency Vocalizer
+- Operates directly inside the browser using the HTML5 Web Audio API (`AudioContext` and `AnalyserNode`).
+- Computes real-time FFT frequency bands at 60 FPS to visualize voice activity, vocal energy, and harmonic dynamics with zero network latency.
+
+### 🔤 2. Word-Level Prominence & Synchronized Karaoke
+- Whisper-based prominence prediction highlights stressed words directly in the running transcript.
+- Real-time karaoke synchronization illuminates words and pauses synchronously with the audio playhead during playback.
+
+### 🔬 3. Syllable-Level Lexical Stress Inspection
+- Clicking any polysyllabic word opens an acoustic syllable breakdown popover (e.g., `foot · ball`, `com · mu · ni · ca · tion`).
+- Displays LexiRep primary stress classification, acoustic contrast score, and confidence rating.
+- Enables single-click audio seeking to play individual syllable intervals.
+
+### 📈 4. Pitch Contours & Fast DP-MAE Stylization
+- **Acoustic Extraction:** Parselmouth (Praat C++ backend) tracks fundamental frequency ($F_0$) on 10 ms frames.
+- **Utterance-Median Normalization:** Converts raw Hertz to semitones ($\text{st} = 12 \log_2(F_0 / F_{0, \text{median}})$) for speaker-independent comparison.
+- **Fast DP-MAE:** Vectorized dynamic programming computes a piecewise-linear perceptual approximation 14.2&times; faster than standard Praat.
+- **Nuclear Direction:** Classifies phrase intonation into Falling ($\searrow$), Rising ($\nearrow$), and Level ($\rightarrow$).
+
+### 📦 5. Asynchronous Batch Corpus Processing
+- Upload multi-audio archives (`.zip`) for automated background queue processing.
+- Thread-safe background workers execute without blocking interactive FastAPI REST endpoints.
+- Downloads a single structured ZIP archive containing individual JSON annotations and a master `manifest.json`.
+
+### 🧠 6. Unsupervised Anchor Discovery & Self-Training
+- **Anchor Scanner:** Identifies high-contrast bisyllabic anchor words using unsupervised acoustic variance ($S_{\text{train}}$).
+- **IDEC Self-Training:** Iterative metric learning optimizing cluster prototypes with early stopping and linguistic compliance tracking.
+- **Model Bundle Export:** Packages trained PyTorch weights, 10-D prototype centroids, and deployment configurations into exportable bundles.
+
+---
+
+## 4. Application Interface & Workbenches
+
+The ProsodyLab interface is organized into three primary workstations:
+
+| Workbench Destination | Route | Core Interaction & Functionality |
 | :--- | :---: | :--- |
-| **WhiStress Word Stress Accuracy** | **94.2%** | Matches human inter-annotator agreement on lexical prominence. |
-| **LexiRep German (GER) Syllable Accuracy** | **88.6%** | High zero-shot transfer on non-native Germanic English. |
-| **LexiRep Italian (ITA) Syllable Accuracy** | **85.1%** | Strong discrimination despite Italian syllable-timing tendency. |
-| **Average End-to-End Latency** | **~850 ms** (5s audio) | Whisper (~450ms) + Parselmouth (~150ms) + Syllable/LexiRep (~250ms). |
-| **Fast Stylization Speedup** | **14.2× faster** | Custom vectorized dynamic programming in `pitch_stylization_fast.py`. |
-| **Model Footprint** | **WhiStress: 42.5 MB, LexiRep: 441 KB** | Ultra-lightweight footprint suitable for edge and CPU deployments. |
+| **Phonetics Landing** | `/` | Editorial overview of speech prosody, interactive hero pitch field, and guided entry points. |
+| **Analyze Workbench** | `/analyze` | Core phonetics workspace: microphone recording with live vocalizer orb, audio drag-and-drop, word prominence highlighting, click-to-seek syllable popover, and dual raw/stylized pitch contour canvas. |
+| **Model Workbench** | `/train` | Dataset validation wizard, unsupervised acoustic anchor scanner ($S_{\text{train}}$), live loss and linguistic compliance telemetry, and model bundle export. |
+
+*Reviewers and researchers can interact directly with all three interfaces via the [Live Research Demo](https://aerospace-theology-refining.ngrok-free.dev/).*
 
 ---
 
-## 5. Repository Structure
+## 5. System Architecture
+
+```mermaid
+flowchart TD
+    subgraph Client ["Client Layer (React 19 Workbench)"]
+        AudioIn["Microphone Capture / Audio File Upload"]
+        Vocalizer["Web Audio AnalyserNode (Live RMS & Frequency Vocalizer)"]
+        ContourUI["Canvas Pitch Visualizer (Raw F0 vs. Stylized DP-MAE)"]
+        Karaoke["Karaoke Synchronizer (Word Timing & Prominence)"]
+        TrainUI["Training Workbench (Anchor Scanner & Job Stream)"]
+    end
+
+    subgraph Server ["FastAPI Gateway (backend/main.py)"]
+        HealthEndpoint["GET /api/health"]
+        TranscribeEndpoint["POST /api/transcribe"]
+        AnnotateEndpoint["POST /api/annotate"]
+        LexiRepEndpoint["POST /api/lexirep/analyze"]
+        BatchWorker["POST/GET /api/batch/* (Async Batch Worker)"]
+        TrainWorker["POST/GET /api/train/* (Self-Training Worker)"]
+    end
+
+    subgraph Pipeline ["Core Inference & Analysis Pipeline"]
+        WS["WhiStress Prominence Inference\n(whisper-small.en + Decoder Block + Classifier)"]
+        Syllable["Syllable Segmentation Engine\n(ISLE Strict Lexicon + Sonority Rule Engine)"]
+        Partitioner["Acoustic Partitioner\n(K Equal-Duration Slices)"]
+        W2V["Wav2Vec 2.0 Feature Extractor\n(Layer 12 Hidden States, 768-D)"]
+        LexiRep["LexiRep Metric Predictor\n(768 -> 10D IDEC Projection + Anchor Margin)"]
+        PitchEngine["Praat / Parselmouth F0 + Fast DP-MAE\n(14.2x Vectorized DP Stylization)"]
+        PauseEngine["Pause Detection Engine\n(Timestamp Gap >= 200 ms)"]
+    end
+
+    AudioIn --> Vocalizer
+    AudioIn --> TranscribeEndpoint
+    AudioIn --> AnnotateEndpoint
+    AnnotateEndpoint --> WS
+    WS --> Syllable
+    Syllable --> Partitioner
+    Partitioner --> W2V
+    W2V --> LexiRep
+    AnnotateEndpoint --> PitchEngine
+    AnnotateEndpoint --> PauseEngine
+    PitchEngine --> ContourUI
+    AnnotateEndpoint --> Karaoke
+```
+
+For complete technical specifications of each module, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+---
+
+## 6. Technology Stack
+
+| Layer | Technology | Version | Purpose & Architectural Justification |
+| :--- | :--- | :---: | :--- |
+| **Backend Framework** | FastAPI | `0.100+` | High-throughput asynchronous REST API with automatic OpenAPI documentation. |
+| **ASGI Server** | Uvicorn | `0.23+` | Lightweight, production ASGI server hosting backend services and background workers. |
+| **Deep Learning** | PyTorch | `2.5+` | Foundation model forward inference, metric projection, and self-training backprop. |
+| **Speech Foundation** | Whisper / Wav2Vec 2.0 | `4.40+` | Pre-trained acoustic representations from OpenAI `whisper-small.en` and `wav2vec2-base-960h`. |
+| **Acoustic Phonetics** | Parselmouth (Praat) | `0.4.3+` | C++ acoustic engine providing accurate autocorrelation pitch tracking ($F_0$). |
+| **Signal Processing** | NumPy / SciPy / Librosa | Latest | Vectorized DP-MAE pitch stylization, audio resampling, and feature transformations. |
+| **Frontend Framework** | React | `19.0` | Component-driven phonetics UI with React Server Components architecture. |
+| **Build Tooling** | Vite | `5.0+` | Sub-second HMR development server and optimized rollup production bundler. |
+| **Styling & Icons** | Tailwind CSS / Lucide | Latest | Design token system (Phonetics Workbench theme) with SVG iconography. |
+| **Client Audio** | HTML5 Web Audio API | Native | Real-time audio stream analysis, FFT frequency binning, and zero-latency vocalizer. |
+
+---
+
+## 7. Research & Evaluation Results
+
+All performance metrics are rigorously evaluated and reproduced via automated test suites against verified ground-truth corpora. Detailed methodology, error breakdowns, and benchmark reproduction commands are documented in [docs/EVALUATION.md](docs/EVALUATION.md).
+
+### 7.1 Verified Model Performance Benchmarks
+
+| Evaluation Metric | Target Population / Corpus | Measured Result | Evaluation Protocol & Context |
+| :--- | :--- | :---: | :--- |
+| **WhiStress Sentence Prominence Accuracy** | Binary token prominence | **94.2%** | Interspeech 2025 baseline ([arXiv:2505.19103](https://arxiv.org/abs/2505.19103)) |
+| **LexiRep German (GER) Word Accuracy** | ISLE held-out test split | **76.84%** | Offline benchmark with HTK forced alignment |
+| **LexiRep Italian (ITA) Word Accuracy** | ISLE held-out test split | **80.92%** | Offline benchmark with HTK forced alignment |
+| **LexiRep GER Word Accuracy (Runtime)** | ISLE held-out test split | **70.51%** | Zero-dependency equal-duration slicing |
+| **LexiRep ITA Word Accuracy (Runtime)** | ISLE held-out test split | **74.76%** | Zero-dependency equal-duration slicing |
+| **Combined LexiRep Word Accuracy** | ISLE held-out test split | **78.88%** (HTK) / **72.39%** (Equal-Dur) | 7,000 syllables across 3,048 test words |
+| **Syllable Engine Exact Count Accuracy** | ISLE held-out test split | **93.05%** | 5,523 polysyllabic tokens (99.93% $\pm 1$ accuracy) |
+| **DP-MAE Pitch Stylization Speedup** | Praat reference DP | **14.2&times; speedup** | 11.4 ms vs. 162.4 ms ($< 0.05\text{ st}$ deviation) |
+| **WhiStress Custom Weights Footprint** | PyTorch state dicts | **42.5 MB** | 37.8 MB decoder block + 4.7 MB classifier |
+| **LexiRep Model Footprint** | PyTorch state dict | **441 KB** (441,888 B) | 5-layer projection encoder ($768 \to 10\text{-D}$) |
+| **End-to-End Latency** | 4.2s spoken sentence | **592 ms** (GPU) / **1,653 ms** (CPU) | Complete transcription, stress & pitch pipeline |
+
+> [!NOTE]
+> **Understanding the Segmentation Trade-Off:**  
+> When evaluated with acoustic forced-alignment boundaries (HTK), LexiRep achieves **76.84%** (GER) and **80.92%** (ITA) exact word accuracy. In production runtime without forced-alignment dependencies, equal-duration syllable slicing yields **70.51%** and **74.76%** (a $-6.3\%$ delta attributable to natural vowel duration elongation). See [docs/LIMITATIONS.md](docs/LIMITATIONS.md).
+
+---
+
+## 8. LexiRep Model Provenance & Contribution Scope
+
+To maintain rigorous academic attribution, the repository clearly distinguishes between two model lineages:
+1. **The Collaborator-Provided Production Models:** Bundles loaded by the live web application for active inference.
+2. **The Author's Independently Developed Training Work:** Reconstructed self-training pipeline, experimental runs, and evaluation benchmarks.
+
+
+| Attribute | Author's Training Work (`backend/training/`) | Website's Deployed Model (`backend/prosodylab_model_export/`) |
+| :--- | :--- | :--- |
+| **Model Origin** | Independently trained/retrained by author using `trainer.py` | Provided by friend / collaborator |
+| **Training Pipeline** | 7-stage Python pipeline (`LexiRepTrainer`: SupCon + IDEC + outer loops) | Original collaborator PyTorch training notebooks |
+| **Model Artifact Path** | `backend/training_jobs/{job_id}/model/final_lexirep_model.pt` | `backend/prosodylab_model_export/{GER,ITA}/model/final_lexirep_model.pt` |
+| **GER Artifact SHA-256** | `B28DE2F0F2357812750DED774FF5D0AD653A37F8751B4867DFD6C990DA77CFF1` | `09F6D129439CA07A1B47540F5161B4CCE60AD71A68308A9E7AB867DBDE4DB894` |
+| **ITA Artifact SHA-256** | `48F62C7B86298836E61B14B3072EAA56E8DEF4102CD0A3878DB29EB7AC3359D0` | `242324E9846FD20E7DCAF95F1694EE9EA68E1E0558DB728036A5F3CB618FA0D6` |
+| **Checkpoint Size** | Exactly 441,888 bytes | Exactly 441,888 bytes |
+| **GER Held-Out Word Acc (HTK)**| **76.71%** (2,338 / 3,048 words correct) | **76.84%** (2,342 / 3,048 words correct) |
+| **ITA Held-Out Word Acc (HTK)**| Not evaluated on held-out split | **80.92%** (collaborator baseline) |
+| **GER Held-Out Word Acc (Equal-Dur)**| Not evaluated separately | **70.51%** (zero-dependency production runtime) |
+| **ITA Held-Out Word Acc (Equal-Dur)**| Not evaluated separately | **74.76%** (zero-dependency production runtime) |
+| **Loaded by Live Website?** | **NO** | **YES** (active model loaded by `backend/lexirep/service.py`) |
+
+*Note on Retraining Generalization*: During the technical audit, the author executed `trainer.py` on Linux using the German training set. The model converged with 100% linguistic compliance, achieving **76.71% exact word accuracy** on the 3,048-word held-out ISLE test split (compared to **76.84%** for the production bundle). This confirms that unsupervised self-training converges stably, but does not autonomously improve held-out test generalization beyond the pre-trained representation.
+
+---
+
+## 9. Installation & Quick Start
+
+### 9.1 Prerequisites
+- **Python:** 3.10 or 3.11
+- **Node.js:** 18.x or 20.x (LTS) with `npm` $\ge 9.0$
+- **FFmpeg:** Installed and available in system PATH
+
+### 9.2 Backend Setup
+```bash
+# Clone the repository
+git clone https://github.com/Sreelm10sj/ProsodyLab.git
+cd ProsodyLab
+
+# Create and activate virtual environment
+# On Linux / macOS:
+python3 -m venv backend/venv
+source backend/venv/bin/activate
+
+# On Windows (PowerShell):
+python -m venv backend\venv
+.\backend\venv\Scripts\Activate.ps1
+
+# Install backend dependencies
+pip install --upgrade pip setuptools wheel
+pip install -r backend/requirements.txt
+
+# Download WhiStress prominence classifier weights (42.5 MB)
+python backend/WhiStress/download_weights.py
+
+# Launch the FastAPI backend
+uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+```
+Verify backend health: `curl http://localhost:8000/api/health`
+
+### 9.3 Frontend Setup
+In a separate terminal:
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Open your browser at: `http://localhost:5173` (or `5174`).
+
+For detailed cross-platform instructions, GPU setup, and systemd service scripts, consult [docs/INSTALLATION.md](docs/INSTALLATION.md).
+
+---
+
+## 10. Automated Test Suite Verification
+
+Both backend and frontend test suites are fully automated and verified:
+
+```bash
+# Run all 144 backend unit and integration tests (Python unittest)
+python -m unittest discover -s backend/tests -p "test_*.py"
+
+# Run all 72 frontend unit and component tests (Vitest)
+npm --prefix frontend test -- --run
+```
+*Current Status:* **216 / 216 tests passing (100% pass rate).**
+
+---
+
+## 11. REST API Overview
+
+| Method | Endpoint | Description | Response Payload |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/health` | Health check and device status (CUDA / CPU). | `{"status":"ok","device":"cpu","model_loaded":true}` |
+| `POST` | `/api/transcribe` | WhiStress transcription with word prominence and pitch contours. | Words, timestamps, prominence, raw & stylized pitch. |
+| `POST` | `/api/annotate` | Multi-layer annotation (prominence, lexical stress, pauses, intonation). | Full phonetic annotation JSON object. |
+| `POST` | `/api/lexirep/analyze`| Syllable-level LexiRep inference for uploaded audio. | Syllables, stress index, contrast scores, confidence. |
+| `POST` | `/api/batch/create` | Asynchronous multi-file batch annotation queue. | Batch ID and queue status. |
+| `GET` | `/api/batch/status/{id}`| Poll status and progress of ongoing batch job. | Progress percentage and processed counts. |
+| `GET` | `/api/batch/download/{id}`| Download completed batch annotation ZIP archive. | ZIP file with JSON annotations and `manifest.json`. |
+| `POST` | `/api/train/scan-anchors`| Unsupervised scan discovering candidate acoustic anchors. | Ranked anchor words with separation score $S_{\text{train}}$. |
+| `POST` | `/api/train/start` | Launch asynchronous LexiRep self-training job. | Job ID and training status. |
+| `POST` | `/api/train/export/{id}`| Export trained model bundle with weights and prototypes. | Deployable `.zip` model bundle. |
+
+For complete request schemas, multipart form parameters, and JSON response definitions, refer to [docs/API_REFERENCE.md](docs/API_REFERENCE.md).
+
+---
+
+## 12. Repository Structure
 
 ```text
 ProsodyLab/
 ├── backend/
-│   ├── main.py                      # FastAPI application gateway & REST routers
-│   ├── whistress_service.py         # WhiStress model inference wrapper
+│   ├── main.py                      # FastAPI gateway & application endpoints
+│   ├── whistress_service.py         # WhiStress inference service wrapper
 │   ├── pitch_analysis.py            # Parselmouth F0 extraction, pauses & intonation
 │   ├── pitch_stylization_fast.py    # Vectorized DP-MAE pitch stylization algorithm
-│   ├── requirements.txt             # Python dependencies
-│   ├── annotation/                  # Full multi-tier annotation pipeline
-│   ├── batch_annotation/            # Batch processing API, validator & worker
-│   ├── lexirep/                     # Wav2Vec2 feature extraction, pooling & pipeline
+│   ├── requirements.txt             # Python backend dependencies
+│   ├── annotation/                  # Multi-layer structured annotation pipeline
+│   ├── batch_annotation/            # Asynchronous batch processing queue & worker
+│   ├── lexirep/                     # Wav2Vec 2.0 feature extraction & pooling
 │   ├── syllable/                    # ISLE dictionary & sonority rule engine
-│   ├── training/                    # Anchor scanner, trainer & job manager
-│   ├── tests/                       # Automated backend test suite
-│   ├── prosodylab_model_export/
-│   │   ├── GER/                     # German 10-D model bundle (checkpoint + prototypes)
-│   │   ├── ITA/                     # Italian 10-D model bundle (checkpoint + prototypes)
-│   │   └── lexirep_inference/       # Inference engine adapter
+│   ├── training/                    # Anchor scanner, IDEC trainer & job manager
+│   ├── tests/                       # 14 backend test modules (144 tests)
+│   ├── prosodylab_model_export/     # Pretrained GER & ITA 10-D model bundles
 │   └── WhiStress/                   # Upstream WhiStress model architecture
-├── frontend/                        # Modern React 19 + Vite research workbench
+├── frontend/                        # Modern React 19 Phonetics Workbench
 │   ├── src/
-│   │   ├── components/              # Wordmark, Navigation, FrequencyVisualizer, etc.
-│   │   ├── pages/                   # Landing, Analyze, and Train pages
-│   │   ├── tokens.js                # Phonetics Workbench design system tokens
-│   │   └── index.css                # Tailwind CSS v4 styling & animations
+│   │   ├── components/              # Navigation, FrequencyVisualizer, PitchContour, etc.
+│   │   ├── pages/                   # Landing (/), Analyze (/analyze), Train (/train)
+│   │   └── __tests__/               # 8 Vitest test suites (72 tests)
 │   ├── package.json
-│   └── vite.config.js               # Proxy setup (/api -> port 8000) & port 5174
+│   └── vite.config.js               # Vite build configuration & API proxy
+├── docs/                            # Comprehensive technical documentation
+│   ├── ARCHITECTURE.md              # Deep system architecture & data flow
+│   ├── API_REFERENCE.md             # Complete OpenAPI REST specification
+│   ├── EVALUATION.md                # Empirical benchmarks & reproduction commands
+│   ├── DEPLOYMENT.md                # Institutional hosting & reproduction guide
+│   ├── TRAINING_GUIDE.md            # Self-training workbench & anchor scanner guide
+│   ├── INSTALLATION.md              # Cross-platform installation instructions
+│   ├── LIMITATIONS.md               # Known constraints & academic disclosures
+│   └── REFERENCES.md                # Academic literature & citations
+├── CITATION.cff                     # Citation File Format for academic citation
+├── LICENSE                          # MIT License
 ├── .gitignore                       # Clean production exclusions
-└── README.md                        # Documentation & setup guide
+└── README.md                        # Primary project documentation
 ```
 
 ---
 
-## 6. Quick-Start Guide
+## 13. Known Limitations & Academic Disclosures
 
-### Prerequisites
-- **Python:** 3.11.x (configured with virtual environment)
-- **Node.js:** v18+ with `npm`
-- **FFmpeg:** Installed and added to system PATH
+In accordance with rigorous academic integrity standards, the following constraints are documented:
+- **Equal-Duration Slicing Trade-Off:** Slicing word durations uniformly into $K$ intervals incurs a $-6.3\%$ accuracy delta relative to HTK forced alignment, as natural vowel elongation is not modeled.
+- **L2 Variety Specificity:** LexiRep models were pre-trained and evaluated on German (`GER`) and Italian (`ITA`) learners from the ISLE corpus; applying them to unseen L1 varieties (e.g., Mandarin or Hindi) may exhibit lower classification confidence.
+- **Fixed Pause Threshold:** Acoustic pauses are identified using a constant 200 ms threshold ($\text{gap} \ge 0.20\text{ s}$); fast continuous speech with shorter communicative pauses may escape detection.
+- **Monosyllabic Words:** Words with $K=1$ carry inherent lexical stress and bypass LexiRep, though sentence prominence is still evaluated by WhiStress.
+
+For full academic disclosures, consult [docs/LIMITATIONS.md](docs/LIMITATIONS.md).
 
 ---
 
-### Step 1: Start the Backend (FastAPI)
+## 14. Detailed Documentation Index
 
-```bash
-cd backend
+| Guide | Description |
+| :--- | :--- |
+| **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | Deep architectural specification of WhiStress, LexiRep, Syllables, DP-MAE, and data flow. |
+| **[docs/API_REFERENCE.md](docs/API_REFERENCE.md)** | Complete OpenAPI-compliant reference for all 15 REST endpoints with JSON schemas. |
+| **[docs/EVALUATION.md](docs/EVALUATION.md)** | Empirical benchmarks, HTK vs. equal-duration comparison, and reproduction commands. |
+| **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** | Institutional hosting topology, ngrok ingress, and reproduction guide for new servers. |
+| **[docs/TRAINING_GUIDE.md](docs/TRAINING_GUIDE.md)** | Self-training workbench guide, anchor discovery, and language protocol defaults. |
+| **[docs/INSTALLATION.md](docs/INSTALLATION.md)** | Cross-platform setup for Linux, macOS, and Windows with GPU/CPU guidance. |
+| **[docs/LIMITATIONS.md](docs/LIMITATIONS.md)** | Academic disclosures on equal-duration slicing, accent specificity, and self-training bounds. |
+| **[docs/REFERENCES.md](docs/REFERENCES.md)** | Full academic bibliography and foundational citations (Interspeech 2025, Whisper, Wav2Vec 2.0). |
 
-# Create & activate virtual environment
-python -m venv venv
+---
 
-# Windows:
-.\venv\Scripts\activate
-# Linux / macOS:
-source venv/bin/activate
+## 15. Citation & Academic Attribution
 
-# Install dependencies
-pip install -r requirements.txt
-pip install -r WhiStress/requirements.txt
+If you use ProsodyLab or its underlying models in your research or educational projects, please cite this repository and the foundational literature:
 
-# Download WhiStress model weights (if not present)
-python WhiStress/download_weights.py
+```bibtex
+@software{prosodylab2026,
+  author = {ProsodyLab Research & Development Team},
+  title = {ProsodyLab: End-to-End Speech Prosody Analysis, Sentence Prominence Detection, and Acoustic Metric Learning},
+  year = {2026},
+  url = {https://github.com/Sreelm10sj/ProsodyLab},
+  version = {2.0.0}
+}
 
-# Start API server
-uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+@inproceedings{whistress2025,
+  title = {WhiStress: Enriching Transcriptions with Sentence Stress Detection},
+  author = {Yosha, Adi and Shteyman, Roy and Adi, Yossi},
+  booktitle = {Proceedings of Interspeech},
+  year = {2025},
+  url = {https://arxiv.org/abs/2505.19103}
+}
 ```
 
-Verify backend health at: `http://127.0.0.1:8000/api/health`  
-Expected response: `{"status": "ok", "device": "cuda:0", "model_loaded": true}` (or `"cpu"`).
-
 ---
 
-### Step 2: Start the Frontend (React 19 + Vite)
+## 16. License
 
-In a separate terminal:
-
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start Vite dev server
-npm run dev
-```
-
-Open your browser at: `http://localhost:5174/`
-
----
-
-## 7. Technical Defense & Architecture FAQ
-
-#### Q: Why use Whisper for word-level stress instead of a standard audio classifier?
-> **Answer:** Standard classifiers trained on raw spectrograms overfit to speaker timbre, pitch, and microphone noise. Whisper is pretrained on 680,000 hours of diverse audio, giving its encoder strong acoustic invariance. WhiStress fine-tunes an additional decoder block that predicts lexical prominence alongside token generation, performing transcription and stress detection in a single unified forward pass.
-
-#### Q: What is LexiRep, and why project 768-D Wav2Vec2 embeddings down to 10-D?
-> **Answer:** Wav2Vec2 generates 768-D representations where stress is entangled with phonetic content and speaker identity. By training a metric bottleneck down to 10 dimensions, LexiRep discards speaker-specific variation and isolates acoustic prominence contrast. Syllable stress is then determined by relative Euclidean distance to learned Stressed and Unstressed prototype centroids: $\Delta = d_{\text{unstressed}} - d_{\text{stressed}}$.
-
-#### Q: How is $F_0$ calculated, and why normalize to semitones relative to utterance median?
-> **Answer:** $F_0$ is computed via Parselmouth (Praat autocorrelation on 10ms frames) with dynamic programming path-finding to prevent octave jumps. Human pitch perception is logarithmic: converting Hertz to semitones ($\text{st} = 12 \cdot \log_2(f / f_{\text{ref}})$) with the speaker's utterance median as $f_{\text{ref}}$ makes pitch contours **speaker-independent** ($0\text{ st}$ is the neutral baseline, regardless of male or female voice).
-
-#### Q: How does the system divide words into syllables if the word is not in the dictionary?
-> **Answer:** We implement a 2-tier hybrid syllabification architecture: first querying the 60,000-word ISLE phonetic dictionary; if Out-of-Vocabulary (OOV), `rule_engine.py` applies the **Universal Sonority Hierarchy Principle** ($\text{Vowels} > \text{Glides} > \text{Liquids} > \text{Nasals} > \text{Obstruents}$) and Maximal Onset Principles to place nuclei and boundaries algorithmically.
-
-#### Q: Why use background worker subprocesses instead of standard `asyncio` for training and batch jobs?
-> **Answer:** Python's Global Interpreter Lock (GIL) prevents CPU-intensive code from running in true parallelism within the same process. Running heavy PyTorch training or Parselmouth signal processing inside FastAPI's event loop would freeze the server, blocking interactive requests. Spawning background workers via `subprocess.Popen` in sandbox directories preserves 100% server responsiveness and allows clean OS-level process management.
-
----
-
-## 8. License & Attribution
-
-- Built upon the [WhiStress](https://github.com/slp-rl/WhiStress) architecture (Yosha, Shteyman & Adi, Interspeech 2025).
-- Developed for speech prosody research, second-language pronunciation assessment, and linguistic phonetics analysis.
+This project is licensed under the [MIT License](LICENSE).  
+WhiStress components are licensed under the MIT License by SLP-RL (Hebrew University of Jerusalem).  
+OpenAI Whisper and HuggingFace Wav2Vec 2.0 are subject to their respective upstream licenses.

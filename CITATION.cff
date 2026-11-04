@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use ProsodyLab in your academic research or engineering projects, please cite this repository and the associated foundational models as below."
+title: "ProsodyLab: End-to-End Speech Prosody Analysis, Sentence Prominence Detection, and Acoustic Metric Learning"
+abstract: "ProsodyLab is an open-source speech phonetics platform integrating sentence-level lexical prominence (WhiStress), syllable-level acoustic lexical stress classification (LexiRep), dynamic programming pitch stylization (DP-MAE), pause detection, and an interactive React phonetics workbench."
+authors:
+  - name: "ProsodyLab Research & Development Team"
+repository-code: "https://github.com/Sreelm10sj/ProsodyLab"
+url: "https://aerospace-theology-refining.ngrok-free.dev/"
+keywords:
+  - "speech prosody"
+  - "sentence prominence"
+  - "lexical stress"
+  - "speech recognition"
+  - "acoustic metric learning"
+  - "pitch stylization"
+  - "phonetics workbench"
+license: MIT
+version: 2.0.0
+date-released: "2026-11-04"
+preferred-citation:
+  type: software
+  title: "ProsodyLab: End-to-End Speech Prosody Analysis, Sentence Prominence Detection, and Acoustic Metric Learning"
+  authors:
+    - name: "ProsodyLab Contributors"
+  year: 2026
+  url: "https://github.com/Sreelm10sj/ProsodyLab"
+
