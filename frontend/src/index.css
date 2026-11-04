@@ -1,305 +1,102 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─── Phonetics Workbench — Token System ──────────────────────────────── */
 
 @theme {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-serif: 'Source Serif 4', Georgia, Cambria, 'Times New Roman', Times, serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  /* Base palette */
+  --color-paper: #F5F4F0;
+  --color-ink: #1C2128;
+  --color-ink-mid: #4E5766;
+  --color-ink-faint: #A8B0BE;
+  --color-stress: #E8B84B;
+  --color-void: #10141C;
 
-  /*
-   Background: cool paper white #F7F8FA
-   Primary text/ink: #1E2530
-   Accent: highlighter yellow #F4C430
+  /* Pitch-pattern semantic colors (single source of truth) */
+  --color-pitch-rise: #2F9E6F;
+  --color-pitch-fall: #4A7EC7;
+  --color-pitch-level: #8B96AA;
+  --color-pitch-none: #9CA3AF;
+
+  /* Refined design system tokens */
+  --color-canvas: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-navy: #0F172A;
+  --color-slate-dark: #334155;
+  --color-slate: #475569;
+  --color-slate-light: #64748B;
+  --color-slate-faint: #94A3B8;
+  --color-border-clean: #E2E8F0;
+  --color-border-subtle: #F1F5F9;
+  --color-gold: #FDB813;
+  --color-gold-hover: #E5A50B;
+  --color-gold-light: #FEF08A;
+  --color-pause-bg: #E0F2FE;
+  --color-pause-text: #0284C7;
+
+  /* Fonts
+     DM Sans: weight 300-800, variable optical size 9..40.
+     Used for display headings (800), body (400), UI labels (600).
+     IBM Plex Mono: unchanged for all data labels and code contexts.
   */
-  --color-paper: #F7F8FA;
-  --color-ink: #1E2530;
-  --color-ink-light: #4A5568;
-  --color-ink-lighter: #A0AEC0;
-  --color-highlight: #F4C430;
+  --font-display: 'DM Sans', system-ui, sans-serif;
+  --font-serif: 'DM Sans', system-ui, sans-serif;
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 }
 
-body {
-  margin: 0;
-  font-family: var(--font-sans);
-  background-color: var(--color-paper);
-  color: var(--color-ink);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* ─── Easing tokens (animate skill §5) ─────────────────────────────────── */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Named shadows */
+  --shadow-1: 2px 2px 0 0 #1C2128;
+  --shadow-2: 4px 4px 0 0 #1C2128;
+  --shadow-accent: 4px 4px 0 0 #E8B84B;
+  --shadow-void: 0 0 40px rgba(16, 20, 28, 0.6);
+
+  /* Refined soft elevations */
+  --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  --shadow-workbench: 0 4px 24px -2px rgba(15, 23, 42, 0.06), 0 2px 8px -2px rgba(15, 23, 42, 0.04);
+  --shadow-popover: 0 10px 30px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+  --shadow-gold: 0 4px 14px 0 rgba(253, 184, 19, 0.35);
 }
 
-/* Accessibility focus styles */
-:focus-visible {
-  outline: 2px solid var(--color-ink);
-  outline-offset: 2px;
+/* ─── Global base ────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-/* 
-  Highlight sweep animation
-  Uses scaleX from 0 to 1 with transform-origin: left.
-*/
-.highlight-sweep {
-  position: relative;
-  display: inline-block;
-  z-index: 1;
-}
-
-.highlight-sweep::before {
-  content: '';
-  position: absolute;
-  top: 15%;
-  left: -2px;
-  right: -2px;
-  bottom: 0;
-  background-color: var(--color-highlight);
-  z-index: -1;
-  transform-origin: left center;
-  transform: scaleX(0);
-  animation: sweep 0.25s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
-  /* animation-delay injected via style per word */
-}
-
-@keyframes sweep {
-  to {
-    transform: scaleX(1);
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .highlight-sweep::before {
-    animation: fade 0.25s ease-out forwards;
-    transform: scaleX(1);
-    opacity: 0;
-  }
-  
-  @keyframes fade {
-    to {
-      opacity: 1;
-    }
+  html {
+    scroll-behavior: auto;
   }
 }
 
-/* Tooltip styles */
-.word-tooltip-container {
-  position: relative;
-  display: inline-block;
-}
-
-.word-tooltip {
-  visibility: hidden;
-  opacity: 0;
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%) translateY(4px);
-  background-color: var(--color-ink);
-  color: var(--color-paper);
-  text-align: center;
-  border-radius: 4px;
-  padding: 4px 8px;
+body {
   font-family: var(--font-sans);
-  font-size: 0.75rem;
-  font-weight: 500;
-  white-space: nowrap;
-  z-index: 10;
-  transition: opacity 0.2s, transform 0.2s;
-  pointer-events: none;
+  background-color: #F5F4F0;
+  color: #1C2128;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
 }
 
-.word-tooltip::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -4px;
-  border-width: 4px;
-  border-style: solid;
-  border-color: var(--color-ink) transparent transparent transparent;
-}
-
-.word-tooltip-container:hover .word-tooltip {
-  visibility: visible;
-  opacity: 1;
-  transform: translateX(-50%) translateY(-4px);
-}
-
-/* ===========================================================================
-   Phrase intonation markers
-   Rendered inline after the last word of each phrase by PhraseIntonation.jsx.
-   Design mirrors word-tooltip so the two annotation layers feel cohesive.
-   =========================================================================== */
-
-.phrase-marker-container {
-  position: relative;
-  display: inline-block;
-  /* Small breathing room between the final word and the badge */
-  margin-left: 3px;
-  margin-right: 2px;
-  /* Sit at the same vertical midpoint as the surrounding text */
-  vertical-align: middle;
-}
-
-/* Arrow badge */
-.phrase-marker {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  font-weight: 700;
-  line-height: 1;
-  padding: 1px 4px;
-  border-radius: 3px;
-  border: 1px solid currentColor;
-  /* Subtle by default — becomes vivid on hover */
-  opacity: 0.55;
-  cursor: default;
-  user-select: none;
-  transition: opacity 0.15s ease;
-}
-
-.phrase-marker-container:hover .phrase-marker {
-  opacity: 1;
-}
-
-/* Per-pattern colour tokens */
-.phrase-marker--rising  { color: #059669; background: rgba(5, 150, 105, 0.07); }
-.phrase-marker--falling { color: #3b82f6; background: rgba(59, 130, 246, 0.07); }
-.phrase-marker--level   { color: #94a3b8; background: rgba(148, 163, 184, 0.07); }
-.phrase-marker--insuf   { color: #9ca3af; background: transparent; opacity: 0.35; }
-
-/* Phrase tooltip — multi-row, wider than the word tooltip */
-.phrase-tooltip {
-  visibility: hidden;
-  opacity: 0;
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%) translateY(4px);
-  background-color: var(--color-ink);
-  color: var(--color-paper);
-  border-radius: 4px;
-  padding: 7px 10px;
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  white-space: nowrap;
-  z-index: 20;          /* above word-tooltip (z-index: 10) */
-  min-width: 170px;
-  transition: opacity 0.2s, transform 0.2s;
-  pointer-events: none;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-}
-
-/* Caret */
-.phrase-tooltip::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -4px;
-  border-width: 4px;
-  border-style: solid;
-  border-color: var(--color-ink) transparent transparent transparent;
-}
-
-.phrase-marker-container:hover .phrase-tooltip {
-  visibility: visible;
-  opacity: 1;
-  transform: translateX(-50%) translateY(-4px);
-}
-
-/* Tooltip internals */
-.phrase-tooltip-header {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  margin-bottom: 5px;
-  color: var(--color-paper);
-}
-
-.phrase-tooltip-divider {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.15);
-  margin: 4px 0;
-}
-
-.phrase-tooltip-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  line-height: 1.6;
-}
-
-.phrase-tooltip-key {
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.phrase-tooltip-val {
-  color: var(--color-paper);
-  font-weight: 600;
-}
-
-/* ===========================================================================
-   Pitch Contour canvas (PitchContour.jsx)
-   Two-layer canvas: static (contour, axes) + dynamic (playhead only).
-   =========================================================================== */
-
-.pitch-contour-container {
-  position: relative;
-  width: 100%;
-  height: 160px;    /* matches H constant in PitchContour.jsx */
-  cursor: crosshair;
-  outline: none;
-  overflow: hidden;
-  /* Ensure the container has a defined size for ResizeObserver */
-  display: block;
-}
-
-/* Keyboard focus ring — matches the existing :focus-visible rule on :root */
-.pitch-contour-container:focus-visible {
-  outline: 2px solid var(--color-ink);
+/* ─── Focus ring ─────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #1C2128;
   outline-offset: 2px;
 }
 
-/* Hover tooltip — updated via DOM ref, never via React setState */
-.pitch-tooltip {
-  position: absolute;
-  pointer-events: none;
-  background-color: var(--color-ink);
-  color: var(--color-paper);
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  padding: 6px 10px;
-  border-radius: 4px;
-  white-space: nowrap;
-  z-index: 30;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-  /* display toggled to 'block' / 'none' via DOM ref */
-}
-
-/* Tooltip typography */
-.pitch-tooltip-time {
-  font-size: 0.64rem;
-  color: rgba(255, 255, 255, 0.50);
-  margin-bottom: 2px;
-  letter-spacing: 0.02em;
-}
-
-.pitch-tooltip-st {
-  font-weight: 700;
-  font-size: 0.74rem;
-}
-
-.pitch-tooltip-hz {
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.60);
-}
-
-.pitch-tooltip-meta {
-  font-size: 0.64rem;
-  color: rgba(255, 255, 255, 0.55);
-  margin-top: 3px;
-}
-
-/* Screen-reader only utility (used for aria-describedby content) */
+/* ─── Screen-reader utility ──────────────────────────────────────────────── */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -309,24 +106,190 @@ body {
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
-  border-width: 0;
+  border: 0;
 }
 
-/* ===========================================================================
-   Prosody Panel — collapsible body (ProsodyPanel.jsx)
+/* ─── Stress highlight sweep ─────────────────────────────────────────────── */
+/*
+ * Uses background-size animation so the highlight is ALWAYS on top of text.
+ * The ::before z-index approach was unreliable for inline elements.
+ * display: inline-block is required so border-radius and padding apply.
+ */
+.highlight-sweep {
+  display: inline-block;
+  position: relative;
+  /* Amber background sweeps left→right */
+  background-image: linear-gradient(to right, #E8B84B 0%, #E8B84B 100%);
+  background-repeat: no-repeat;
+  background-size: 0% 100%;
+  background-position: left center;
+  border-radius: 2px;
+  padding: 0 3px;
+  color: #1C2128 !important;
+  animation: sweep 0.28s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
 
-   Uses the CSS grid-template-rows 0fr → 1fr trick for smooth height animation
-   without needing to know the content height in advance.
+@keyframes sweep {
+  from {
+    background-size: 0% 100%;
+  }
 
-   1. The outer (.prosody-panel-body) acts as the grid container.
-   2. The inner (.prosody-panel-inner) is the single grid child with
-      overflow:hidden — this is what gets clipped to 0 height when collapsed.
-   =========================================================================== */
+  to {
+    background-size: 100% 100%;
+  }
+}
 
+@media (prefers-reduced-motion: reduce) {
+  .highlight-sweep {
+    background-size: 100% 100%;
+    animation: none;
+  }
+}
+
+
+/* ─── Word tooltip ───────────────────────────────────────────────────────── */
+.word-tooltip-container {
+  position: relative;
+  display: inline;
+}
+
+.word-tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: #1C2128;
+  color: #F5F4F0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  padding: 5px 8px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s var(--ease-out), transform 0.15s var(--ease-out);
+  z-index: 50;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .word-tooltip-container:hover .word-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ─── LexiRep Syllable Popover ─────────────────────────────────────────── */
+.lexirep-popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: #1C2128;
+  color: #F5F4F0;
+  border: 1px solid #4E5766;
+  box-shadow: 0 8px 24px rgba(16, 20, 28, 0.45);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  padding: 10px 14px;
+  min-width: 250px;
+  max-width: 420px;
+  z-index: 60;
+  border-radius: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s var(--ease-out), transform 0.15s var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .word-tooltip-container:hover .lexirep-popover:not(.pinned) {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.lexirep-popover.pinned {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ─── Phrase marker & tooltip ────────────────────────────────────────────── */
+.phrase-marker-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.phrase-marker {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;   /* slightly reduced */
+  font-weight: 700;
+  padding: 0 2px;       /* tighter than before */
+  border-radius: 2px;
+  /* No border — user requested removal */
+  border: none;
+  opacity: 0.65;
+  cursor: default;
+  transition: opacity 0.15s ease;
+  user-select: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .phrase-marker-container:hover .phrase-marker {
+    opacity: 1;
+  }
+
+  .phrase-marker-container:hover .phrase-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.phrase-marker--rise  { color: #2F9E6F; }
+.phrase-marker--fall  { color: #4A7EC7; }
+.phrase-marker--level { color: #8B96AA; }
+.phrase-marker--none  { color: #9CA3AF; opacity: 0.3; }
+
+.phrase-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: #1C2128;
+  color: #F5F4F0;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  line-height: 1.6;
+  padding: 6px 10px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s var(--ease-out), transform 0.15s var(--ease-out);
+  z-index: 50;
+}
+
+/* ─── Pitch tooltip (DOM-mutated, no CSS transition needed) ──────────────── */
+.pitch-tooltip {
+  position: fixed;
+  background: #1C2128;
+  color: #F5F4F0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 4px 8px;
+  pointer-events: none;
+  z-index: 100;
+  display: none;
+}
+
+/* ─── Prosody panel collapse/expand ─────────────────────────────────────── */
 .prosody-panel-body {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.30s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: grid-template-rows 0.30s var(--ease-in-out);
 }
 
 .prosody-panel-body--open {
@@ -337,85 +300,764 @@ body {
   overflow: hidden;
 }
 
-/* Chevron rotation */
 .prosody-chevron {
-  transition: transform 0.30s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.30s var(--ease-in-out);
 }
 
-/* Suppress animation for users who prefer reduced motion */
+.prosody-chevron--open {
+  transform: rotate(180deg);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .prosody-panel-body {
     transition: none;
   }
+
   .prosody-chevron {
     transition: none;
   }
 }
 
-/* ===========================================================================
-   Legend — compact annotation key inside ProsodyPanel
-   =========================================================================== */
-
-.legend-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 22px;
-  align-items: center;
+/* ─── Pitch contour container ────────────────────────────────────────────── */
+.pitch-contour-scroll {
+  overflow-x: auto;
+  position: relative;
+  outline: none;
 }
 
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  cursor: default;
+/* ─── Loading animations — reduced-motion guard ─────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+
+  .animate-pulse,
+  .animate-ping {
+    animation: none !important;
+  }
 }
 
-/* Fixed-width preview column keeps labels visually aligned */
-.legend-swatch-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  min-width: 36px;
+/* ─── Landing page — pitch field ─────────────────────────────────────────── */
+.pitch-field-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
-/* Stress preview — amber highlight-sweep background */
-.legend-preview-stress {
-  font-family: var(--font-serif);
-  font-size: 0.78rem;
+/* ─── Button press recipe (animate skill) ────────────────────────────────── */
+.btn-press {
+  transition: transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
+}
+
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+/* ─── CTA two-panel split ─────────────────────────────────────────────────── */
+.cta-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 24px;
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 220ms var(--ease-out), transform 220ms var(--ease-out);
+}
+
+.cta-panel__label {
+  display: block;
+  font-family: var(--font-mono);
   font-weight: 700;
-  padding: 0 2px;
-  background-color: var(--color-highlight);
-  color: var(--color-ink);
-  line-height: 1.3;
+  font-size: clamp(13px, 1.4vw, 16px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: color 220ms var(--ease-out), transform 220ms var(--ease-out);
 }
 
-/* Pause preview — muted monospace dots */
-.legend-preview-pause {
+.cta-panel__sublabel {
+  display: block;
   font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--color-ink-lighter);
-  letter-spacing: 0.08em;
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 220ms var(--ease-out), opacity 220ms var(--ease-out);
 }
 
-/* Rising / falling / level arrow badges — same tokens as phrase-marker in index.css */
-.legend-arrow {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  font-weight: 700;
-  padding: 1px 4px;
-  border-radius: 3px;
-  border: 1px solid currentColor;
-  line-height: 1.2;
+.cta-panel--primary .cta-panel__label {
+  color: rgba(245, 244, 240, 0.6);
 }
 
-.legend-arrow--rising  { color: #059669; }
-.legend-arrow--falling { color: #3b82f6; }
-.legend-arrow--level   { color: #94a3b8; }
+.cta-panel--primary .cta-panel__sublabel {
+  color: rgba(245, 244, 240, 0.3);
+}
 
-/* Legend text label */
-.legend-label {
-  font-family: var(--font-mono);
-  font-size: 0.70rem;
-  color: var(--color-ink-light);
-  white-space: nowrap;
+.cta-panel--secondary .cta-panel__label {
+  color: rgba(245, 244, 240, 0.45);
+}
+
+.cta-panel--secondary .cta-panel__sublabel {
+  color: rgba(245, 244, 240, 0.25);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cta-panel--primary:hover {
+    background: rgba(245, 244, 240, 0.04);
+    transform: translateX(-4px);
+  }
+
+  .cta-panel--primary:hover .cta-panel__label {
+    color: #F5F4F0;
+    transform: translateX(-2px);
+  }
+
+  .cta-panel--primary:hover .cta-panel__sublabel {
+    color: rgba(245, 244, 240, 0.55);
+  }
+
+  .cta-panel--secondary:hover {
+    background: rgba(47, 158, 111, 0.06);
+    transform: translateX(4px);
+  }
+
+  .cta-panel--secondary:hover .cta-panel__label {
+    color: #2F9E6F;
+    transform: translateX(2px);
+  }
+
+  .cta-panel--secondary:hover .cta-panel__sublabel {
+    color: rgba(47, 158, 111, 0.6);
+  }
+}
+
+.cta-panel:active {
+  transform: scale(0.98);
+}
+
+/* ─── Scroll reveal legacy ─────────────────────────────────────────────────── */
+.reveal-item[data-visible] {
+  clip-path: inset(0 0 0% 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-item {
+    clip-path: none;
+    transition: none;
+  }
+}
+
+/* ─── Mock progress bar ──────────────────────────────────────────────────── */
+.mock-progress-track {
+  background: rgba(28, 33, 40, 0.1);
+  height: 4px;
+  width: 100%;
+}
+
+.mock-progress-fill {
+  height: 100%;
+  background: #E8B84B;
+  transition: width 150ms linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mock-progress-fill {
+    transition: none;
+  }
+}
+
+/* ─── Route transition (crossfade, 200-350ms) ────────────────────────────── */
+/* Applied via PageTransition wrapper in App.jsx */
+.page-enter {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 250ms var(--ease-out),
+    transform 250ms var(--ease-out);
+}
+
+.page-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-exit-active {
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity 200ms var(--ease-in-out),
+    transform 200ms var(--ease-in-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter {
+    opacity: 0;
+    transform: none;
+  }
+
+  .page-enter-active {
+    opacity: 1;
+    transform: none;
+    transition: opacity 150ms ease;
+  }
+
+  .page-exit-active {
+    opacity: 0;
+    transform: none;
+    transition: opacity 100ms ease;
+  }
+}
+
+/* ─── Refined Visual Design System Components ────────────────────────── */
+
+/* Primary Gold Action Button with arrow hover translation */
+.btn-gold-action {
+  background-color: #FDB813;
+  color: #0F172A;
+  font-weight: 600;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 150ms var(--ease-out), transform 150ms var(--ease-out), box-shadow 150ms var(--ease-out);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  cursor: pointer;
+  border: none;
+}
+
+.btn-gold-action:hover:not(:disabled) {
+  background-color: #E5A50B;
+}
+
+.btn-gold-action:hover:not(:disabled) .arrow-shift {
+  transform: translateX(3px);
+}
+
+.btn-gold-action:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.arrow-shift {
+  transition: transform 150ms var(--ease-out);
+  display: inline-block;
+}
+
+/* White Secondary Button */
+.btn-white-action {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  color: #0F172A;
+  font-weight: 500;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 150ms var(--ease-out);
+  cursor: pointer;
+}
+
+.btn-white-action:hover:not(:disabled) {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+.btn-white-action:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Natural Sentence Transcript Word Tokens (Prose styling) */
+.word-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 4px;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: inherit;
+  line-height: inherit;
+  color: #0F172A;
+  font-weight: 400;
+  cursor: pointer;
+  transition: background-color 120ms var(--ease-out), color 120ms var(--ease-out), border-color 120ms var(--ease-out);
+  user-select: none;
+  vertical-align: baseline;
+  text-decoration: none;
+}
+
+.word-pill:hover {
+  background-color: #F1F5F9;
+  border-color: #E2E8F0;
+}
+
+.word-pill:focus-visible {
+  outline: 2px solid #0F172A;
+  outline-offset: 1px;
+}
+
+.word-pill-stressed {
+  background-color: rgba(253, 184, 19, 0.48) !important;
+  color: #0F172A !important;
+  font-weight: 600 !important;
+  border-radius: 4px !important;
+  border: 1px solid rgba(229, 165, 11, 0.85) !important;
+}
+
+.word-pill-stressed:hover {
+  background-color: rgba(253, 184, 19, 0.65) !important;
+  border-color: #E5A50B !important;
+}
+
+/* Polysyllabic word styling (non-active) */
+.word-pill-poly {
+  border-bottom: none;
+}
+
+.word-pill-stressed.word-pill-poly {
+  border-bottom: none;
+}
+
+.syl-stressed {
+  font-weight: 600;
+  color: #0F172A;
+  text-decoration: underline;
+  text-decoration-color: #FDB813;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.syl-unstressed {
+  font-weight: 400;
+  color: #334155;
+}
+
+.syl-bullet {
+  color: #94A3B8;
+}
+
+.word-pill-pause {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #F0F9FF !important;
+  border: 1px solid #BAE6FD !important;
+  color: #0284C7 !important;
+  font-weight: 700 !important;
+  padding: 1px 8px !important;
+  margin: 0 4px !important;
+  border-radius: 9999px !important;
+  font-size: 0.75rem !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0.15em;
+  vertical-align: middle;
+}
+
+.word-pill-pause:hover {
+  background-color: #E0F2FE !important;
+}
+
+/* ─── Active karaoke word accent & high-contrast child styling ─── */
+.word-pill-active {
+  background-color: #0F172A !important;
+  color: #FFFFFF !important;
+  border-radius: 4px !important;
+  border: 1px solid #0F172A !important;
+  font-weight: 600 !important;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.3) !important;
+}
+
+/* ─── Dedicated visual state: Active + Polysyllabic (activePolysyllabicWord) ─── */
+.activePolysyllabicWord,
+.word-pill-active.word-pill-poly,
+.word-pill-active-poly {
+  background-color: #0F172A !important;
+  color: #FFFFFF !important;
+  border-radius: 4px !important;
+  border: 1px solid #0F172A !important;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.35) !important;
+}
+
+/* High contrast readability for syllables when active */
+.activePolysyllabicWord .syl-unstressed,
+.word-pill-active .syl-unstressed {
+  color: #FFFFFF !important;
+  font-weight: 500 !important;
+  opacity: 1 !important;
+}
+
+.activePolysyllabicWord .syl-stressed,
+.word-pill-active .syl-stressed {
+  color: #FDB813 !important;
+  font-weight: 700 !important;
+  text-decoration: underline !important;
+  text-decoration-color: #FDB813 !important;
+  text-decoration-thickness: 2.5px !important;
+  text-underline-offset: 3px !important;
+}
+
+.activePolysyllabicWord .syl-bullet,
+.word-pill-active .syl-bullet {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* ─── Stressed + Active karaoke combination ─── */
+.word-pill-active.word-pill-stressed,
+.word-pill-active-stressed {
+  background-color: #0F172A !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 0 2px #FDB813 !important;
+  border: 1px solid #FDB813 !important;
+}
+
+/* ─── Stressed + Polysyllabic + Active karaoke combination ─── */
+.activePolysyllabicWord-stressed,
+.activePolysyllabicWord.word-pill-stressed,
+.word-pill-active.word-pill-poly.word-pill-stressed {
+  background-color: #0F172A !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 0 2px #FDB813 !important;
+  border: 1px solid #FDB813 !important;
+}
+
+.activePolysyllabicWord-stressed .syl-stressed,
+.activePolysyllabicWord.word-pill-stressed .syl-stressed,
+.word-pill-active.word-pill-stressed .syl-stressed {
+  color: #FDB813 !important;
+  font-weight: 800 !important;
+  text-decoration: underline !important;
+  text-decoration-color: #FDB813 !important;
+  text-decoration-thickness: 2.5px !important;
+  text-underline-offset: 3px !important;
+}
+
+.activePolysyllabicWord-stressed .syl-unstressed,
+.activePolysyllabicWord.word-pill-stressed .syl-unstressed,
+.word-pill-active.word-pill-stressed .syl-unstressed {
+  color: #FFFFFF !important;
+  font-weight: 500 !important;
+}
+
+.transcript-prose-container {
+  display: inline;
+  line-height: 2.2;
+  word-break: break-word;
+}
+
+/* ─── Comprehensive Dark Mode Theme ────────────────────────────────────────── */
+
+html.dark {
+  --color-paper: #0B0F17;
+  --color-ink: #F8FAFC;
+  --color-ink-mid: #94A3B8;
+  --color-ink-faint: #475569;
+  --color-void: #030712;
+  --color-canvas: #090D16;
+  --color-surface: #151D2A;
+  --color-navy: #F8FAFC;
+  --color-slate-dark: #E2E8F0;
+  --color-slate: #CBD5E1;
+  --color-slate-light: #94A3B8;
+  --color-slate-faint: #64748B;
+  --color-border-clean: #1E293B;
+  --color-border-subtle: #1E293B;
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
+  --shadow-workbench: 0 4px 24px -2px rgba(0, 0, 0, 0.6), 0 2px 8px -2px rgba(0, 0, 0, 0.4);
+  --shadow-popover: 0 10px 30px -4px rgba(0, 0, 0, 0.7), 0 4px 12px -2px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+/* Backgrounds and base surfaces in dark mode */
+html.dark,
+html.dark body {
+  background-color: #090D16 !important;
+  color: #F8FAFC !important;
+}
+
+html.dark .min-h-screen.bg-\[\#F8FAFC\],
+html.dark .bg-\[\#F8FAFC\],
+html.dark .bg-paper {
+  background-color: #090D16 !important;
+}
+
+html.dark .bg-white {
+  background-color: #151D2A !important;
+}
+
+html.dark .bg-slate-50,
+html.dark .bg-slate-50\/70,
+html.dark .bg-slate-50\/50 {
+  background-color: #111827 !important;
+}
+
+html.dark .bg-slate-100,
+html.dark .bg-slate-100\/90,
+html.dark .bg-slate-100\/80,
+html.dark .bg-slate-100\/70,
+html.dark .bg-slate-100\/50 {
+  background-color: #1E293B !important;
+}
+
+html.dark .bg-slate-200 {
+  background-color: #334155 !important;
+}
+
+html.dark .border-slate-200,
+html.dark .border-slate-200\/80,
+html.dark .border-slate-200\/60,
+html.dark .border-slate-100 {
+  border-color: #1E293B !important;
+}
+
+html.dark .border-slate-300 {
+  border-color: #334155 !important;
+}
+
+html.dark .text-slate-900 {
+  color: #F8FAFC !important;
+}
+
+html.dark .text-slate-800 {
+  color: #F1F5F9 !important;
+}
+
+html.dark .text-slate-700 {
+  color: #E2E8F0 !important;
+}
+
+html.dark .text-slate-600 {
+  color: #CBD5E1 !important;
+}
+
+html.dark .text-slate-500 {
+  color: #94A3B8 !important;
+}
+
+html.dark .text-slate-400 {
+  color: #64748B !important;
+}
+
+/* Secondary white action buttons in dark mode */
+html.dark .btn-white-action {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+  color: #F8FAFC !important;
+}
+
+html.dark .btn-white-action:hover:not(:disabled) {
+  background-color: #283548 !important;
+  border-color: #475569 !important;
+  color: #FFFFFF !important;
+}
+
+/* Primary dark action buttons (#0F172A) convert to vibrant accent buttons in dark mode */
+html.dark button.bg-\[\#0F172A\],
+html.dark .bg-\[\#0F172A\] {
+  background-color: #FDB813 !important;
+  color: #0F172A !important;
+}
+
+html.dark button.bg-\[\#0F172A\]:hover,
+html.dark .bg-\[\#0F172A\]:hover {
+  background-color: #E5A50B !important;
+}
+
+/* Dropzones and dashed borders */
+html.dark .border-dashed {
+  border-color: #334155 !important;
+}
+
+html.dark .border-dashed:hover {
+  border-color: #FDB813 !important;
+}
+
+/* Inputs, selects, and textareas */
+html.dark input[type="text"],
+html.dark input[type="number"],
+html.dark select,
+html.dark textarea {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+  color: #F8FAFC !important;
+}
+
+/* Tables in AnnotationViewer */
+html.dark table th {
+  background-color: #111827 !important;
+  color: #94A3B8 !important;
+  border-color: #1E293B !important;
+}
+
+html.dark table td {
+  border-color: #1E293B !important;
+  color: #E2E8F0 !important;
+}
+
+html.dark table tr:hover td {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Waveform slider accent & needle in dark mode */
+html.dark .accent-\[\#0F172A\] {
+  accent-color: #FDB813 !important;
+}
+
+html.dark div.bg-\[\#0F172A\] {
+  background-color: #FDB813 !important;
+}
+
+/* Tooltip portals in dark mode */
+html.dark #word-portal-tooltip > div,
+html.dark [role="tooltip"].bg-white {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+  color: #F8FAFC !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* ─── Transcript word tokens & karaoke styling in Dark Mode ─── */
+html.dark .word-pill {
+  color: #E2E8F0 !important;
+}
+
+html.dark .word-pill:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark .word-pill-stressed {
+  background-color: rgba(253, 184, 19, 0.22) !important;
+  border: 1px solid rgba(253, 184, 19, 0.65) !important;
+  color: #FFFFFF !important;
+}
+
+html.dark .word-pill-stressed:hover {
+  background-color: rgba(253, 184, 19, 0.35) !important;
+  border-color: #FDB813 !important;
+}
+
+/* Yellow line on polysyllabic word is explicitly NONE */
+html.dark .word-pill-poly,
+html.dark .word-pill-stressed.word-pill-poly {
+  border-bottom: none !important;
+}
+
+/* Yellow underline on stressed syllables is preserved */
+html.dark .syl-stressed {
+  color: #FDB813 !important;
+  text-decoration: underline !important;
+  text-decoration-color: #FDB813 !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px !important;
+}
+
+html.dark .syl-unstressed {
+  color: #CBD5E1 !important;
+}
+
+html.dark .syl-bullet {
+  color: #64748B !important;
+}
+
+html.dark .word-pill-pause {
+  background-color: rgba(14, 165, 233, 0.18) !important;
+  border: 1px solid rgba(14, 165, 233, 0.45) !important;
+  color: #38BDF8 !important;
+}
+
+html.dark .word-pill-pause:hover {
+  background-color: rgba(14, 165, 233, 0.28) !important;
+}
+
+/* High contrast active karaoke word in dark mode: stark white surface */
+html.dark .word-pill-active,
+html.dark .activePolysyllabicWord,
+html.dark .word-pill-active.word-pill-poly,
+html.dark .word-pill-active-poly {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border: 1px solid #FFFFFF !important;
+  box-shadow: 0 0 0 2px #FDB813, 0 4px 14px rgba(0, 0, 0, 0.6) !important;
+  border-bottom: none !important;
+}
+
+html.dark .activePolysyllabicWord .syl-unstressed,
+html.dark .word-pill-active .syl-unstressed {
+  color: #0F172A !important;
+  font-weight: 500 !important;
+}
+
+html.dark .activePolysyllabicWord .syl-stressed,
+html.dark .word-pill-active .syl-stressed {
+  color: #B45309 !important;
+  font-weight: 800 !important;
+  text-decoration: underline !important;
+  text-decoration-color: #FDB813 !important;
+  text-decoration-thickness: 2.5px !important;
+  text-underline-offset: 3px !important;
+}
+
+html.dark .activePolysyllabicWord .syl-bullet,
+html.dark .word-pill-active .syl-bullet {
+  color: #64748B !important;
+}
+
+/* Active + Stressed karaoke combination in dark mode */
+html.dark .word-pill-active.word-pill-stressed,
+html.dark .word-pill-active-stressed,
+html.dark .activePolysyllabicWord-stressed,
+html.dark .activePolysyllabicWord.word-pill-stressed,
+html.dark .word-pill-active.word-pill-poly.word-pill-stressed {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  box-shadow: 0 0 0 2.5px #FDB813, 0 4px 14px rgba(253, 184, 19, 0.4) !important;
+  border: 1px solid #FDB813 !important;
+  border-bottom: none !important;
+}
+
+html.dark .activePolysyllabicWord-stressed .syl-stressed,
+html.dark .activePolysyllabicWord.word-pill-stressed .syl-stressed,
+html.dark .word-pill-active.word-pill-stressed .syl-stressed {
+  color: #B45309 !important;
+  font-weight: 800 !important;
+  text-decoration: underline !important;
+  text-decoration-color: #FDB813 !important;
+  text-decoration-thickness: 2.5px !important;
+  text-underline-offset: 3px !important;
+}
+
+html.dark .activePolysyllabicWord-stressed .syl-unstressed,
+html.dark .activePolysyllabicWord.word-pill-stressed .syl-unstressed,
+html.dark .word-pill-active.word-pill-stressed .syl-unstressed {
+  color: #0F172A !important;
+  font-weight: 500 !important;
+}
+
+/* Subtle scientific indeterminate progress bar animation */
+@keyframes indeterminate {
+  0% {
+    left: -35%;
+    width: 35%;
+  }
+  50% {
+    left: 40%;
+    width: 45%;
+  }
+  100% {
+    left: 100%;
+    width: 35%;
+  }
+}
+
+.animate-indeterminate {
+  position: absolute;
+  animation: indeterminate 1.4s ease-in-out infinite;
 }
