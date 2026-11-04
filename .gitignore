@@ -157,5 +157,5 @@ full_page_*.png
 extracted_figures/
 katex_assets/
 PROFESSOR_DEMO_GUIDE.md
-docs/
+docs/chatgpt-context.md
 .agents/
