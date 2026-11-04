@@ -184,39 +184,14 @@ All performance metrics are rigorously evaluated and reproduced via automated te
 
 ---
 
-## 8. LexiRep Model Provenance & Contribution Scope
+## 8. Installation & Quick Start
 
-To maintain rigorous academic attribution, the repository clearly distinguishes between two model lineages:
-1. **The Collaborator-Provided Production Models:** Bundles loaded by the live web application for active inference.
-2. **The Author's Independently Developed Training Work:** Reconstructed self-training pipeline, experimental runs, and evaluation benchmarks.
-
-
-| Attribute | Author's Training Work (`backend/training/`) | Website's Deployed Model (`backend/prosodylab_model_export/`) |
-| :--- | :--- | :--- |
-| **Model Origin** | Independently trained/retrained by author using `trainer.py` | Provided by friend / collaborator |
-| **Training Pipeline** | 7-stage Python pipeline (`LexiRepTrainer`: SupCon + IDEC + outer loops) | Original collaborator PyTorch training notebooks |
-| **Model Artifact Path** | `backend/training_jobs/{job_id}/model/final_lexirep_model.pt` | `backend/prosodylab_model_export/{GER,ITA}/model/final_lexirep_model.pt` |
-| **GER Artifact SHA-256** | `B28DE2F0F2357812750DED774FF5D0AD653A37F8751B4867DFD6C990DA77CFF1` | `09F6D129439CA07A1B47540F5161B4CCE60AD71A68308A9E7AB867DBDE4DB894` |
-| **ITA Artifact SHA-256** | `48F62C7B86298836E61B14B3072EAA56E8DEF4102CD0A3878DB29EB7AC3359D0` | `242324E9846FD20E7DCAF95F1694EE9EA68E1E0558DB728036A5F3CB618FA0D6` |
-| **Checkpoint Size** | Exactly 441,888 bytes | Exactly 441,888 bytes |
-| **GER Held-Out Word Acc (HTK)**| **76.71%** (2,338 / 3,048 words correct) | **76.84%** (2,342 / 3,048 words correct) |
-| **ITA Held-Out Word Acc (HTK)**| Not evaluated on held-out split | **80.92%** (collaborator baseline) |
-| **GER Held-Out Word Acc (Equal-Dur)**| Not evaluated separately | **70.51%** (zero-dependency production runtime) |
-| **ITA Held-Out Word Acc (Equal-Dur)**| Not evaluated separately | **74.76%** (zero-dependency production runtime) |
-| **Loaded by Live Website?** | **NO** | **YES** (active model loaded by `backend/lexirep/service.py`) |
-
-*Note on Retraining Generalization*: During the technical audit, the author executed `trainer.py` on Linux using the German training set. The model converged with 100% linguistic compliance, achieving **76.71% exact word accuracy** on the 3,048-word held-out ISLE test split (compared to **76.84%** for the production bundle). This confirms that unsupervised self-training converges stably, but does not autonomously improve held-out test generalization beyond the pre-trained representation.
-
----
-
-## 9. Installation & Quick Start
-
-### 9.1 Prerequisites
+### 8.1 Prerequisites
 - **Python:** 3.10 or 3.11
 - **Node.js:** 18.x or 20.x (LTS) with `npm` $\ge 9.0$
 - **FFmpeg:** Installed and available in system PATH
 
-### 9.2 Backend Setup
+### 8.2 Backend Setup
 ```bash
 # Clone the repository
 git clone https://github.com/Sreelm10sj/ProsodyLab.git
@@ -243,7 +218,7 @@ uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 Verify backend health: `curl http://localhost:8000/api/health`
 
-### 9.3 Frontend Setup
+### 8.3 Frontend Setup
 In a separate terminal:
 ```bash
 cd frontend
@@ -256,7 +231,7 @@ For detailed cross-platform instructions, GPU setup, and systemd service scripts
 
 ---
 
-## 10. Automated Test Suite Verification
+## 9. Automated Test Suite Verification
 
 Both backend and frontend test suites are fully automated and verified:
 
@@ -271,7 +246,7 @@ npm --prefix frontend test -- --run
 
 ---
 
-## 11. REST API Overview
+## 10. REST API Overview
 
 | Method | Endpoint | Description | Response Payload |
 | :--- | :--- | :--- | :--- |
@@ -290,7 +265,7 @@ For complete request schemas, multipart form parameters, and JSON response defin
 
 ---
 
-## 12. Repository Structure
+## 11. Repository Structure
 
 ```text
 ProsodyLab/
@@ -332,7 +307,7 @@ ProsodyLab/
 
 ---
 
-## 13. Known Limitations & Academic Disclosures
+## 12. Known Limitations & Academic Disclosures
 
 In accordance with rigorous academic integrity standards, the following constraints are documented:
 - **Equal-Duration Slicing Trade-Off:** Slicing word durations uniformly into $K$ intervals incurs a $-6.3\%$ accuracy delta relative to HTK forced alignment, as natural vowel elongation is not modeled.
@@ -344,7 +319,7 @@ For full academic disclosures, consult [docs/LIMITATIONS.md](docs/LIMITATIONS.md
 
 ---
 
-## 14. Detailed Documentation Index
+## 13. Detailed Documentation Index
 
 | Guide | Description |
 | :--- | :--- |
@@ -359,7 +334,7 @@ For full academic disclosures, consult [docs/LIMITATIONS.md](docs/LIMITATIONS.md
 
 ---
 
-## 15. Citation & Academic Attribution
+## 14. Citation & Academic Attribution
 
 If you use ProsodyLab or its underlying models in your research or educational projects, please cite this repository and the foundational literature:
 
@@ -383,7 +358,7 @@ If you use ProsodyLab or its underlying models in your research or educational p
 
 ---
 
-## 16. License
+## 15. License
 
 This project is licensed under the [MIT License](LICENSE).  
 WhiStress components are licensed under the MIT License by SLP-RL (Hebrew University of Jerusalem).  
