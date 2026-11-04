@@ -47,54 +47,58 @@ The live research demonstration is hosted on institutional server infrastructure
 
 ## 3. Key Capabilities & Features
 
-### 🎙️ 1. Live Web Audio Frequency Vocalizer
+### 1. Live Web Audio Frequency Vocalizer
 - Operates directly inside the browser using the HTML5 Web Audio API (`AudioContext` and `AnalyserNode`).
 - Computes real-time FFT frequency bands at 60 FPS to visualize voice activity, vocal energy, and harmonic dynamics with zero network latency.
 
-### 🔤 2. Word-Level Prominence & Synchronized Karaoke
+### 2. Word-Level Prominence & Synchronized Karaoke
 - Whisper-based prominence prediction highlights stressed words directly in the running transcript.
 - Real-time karaoke synchronization illuminates words and pauses synchronously with the audio playhead during playback.
 
-### 🔬 3. Syllable-Level Lexical Stress Inspection
+### 3. Syllable-Level Lexical Stress Inspection
 - Clicking any polysyllabic word opens an acoustic syllable breakdown popover (e.g., `foot · ball`, `com · mu · ni · ca · tion`).
 - Displays LexiRep primary stress classification, acoustic contrast score, and confidence rating.
 - Enables single-click audio seeking to play individual syllable intervals.
 
-### 📈 4. Pitch Contours & Fast DP-MAE Stylization
+### 4. Pitch Contours & Fast DP-MAE Stylization
 - **Acoustic Extraction:** Parselmouth (Praat C++ backend) tracks fundamental frequency ($F_0$) on 10 ms frames.
-- **Utterance-Median Normalization:** Converts raw Hertz to semitones ($\text{st} = 12 \log_2(F_0 / F_{0, \text{median}})$) for speaker-independent comparison.
+- **Utterance-Median Normalization:** Converts raw Hertz to speaker-independent semitones using logarithmic normalization:
+  $$\text{st} = 12 \cdot \log_2\left(\frac{F_0}{F_{0,\text{median}}}\right)$$
+  where $F_{0,\text{median}}$ represents the utterance median baseline pitch ($0\text{ st}$).
 - **Fast DP-MAE:** Vectorized dynamic programming computes a piecewise-linear perceptual approximation 14.2&times; faster than standard Praat.
 - **Nuclear Direction:** Classifies phrase intonation into Falling ($\searrow$), Rising ($\nearrow$), and Level ($\rightarrow$).
 
-### 📦 5. Asynchronous Batch Corpus Processing
+### 5. Asynchronous Batch Corpus Processing
 - Upload multi-audio archives (`.zip`) for automated background queue processing.
 - Thread-safe background workers execute without blocking interactive FastAPI REST endpoints.
 - Downloads a single structured ZIP archive containing individual JSON annotations and a master `manifest.json`.
 
-### 🧠 6. Unsupervised Anchor Discovery & Self-Training
+### 6. Unsupervised Anchor Discovery & Self-Training
 - **Anchor Scanner:** Identifies high-contrast bisyllabic anchor words using unsupervised acoustic variance ($S_{\text{train}}$).
 - **IDEC Self-Training:** Iterative metric learning optimizing cluster prototypes with early stopping and linguistic compliance tracking.
 - **Model Bundle Export:** Packages trained PyTorch weights, 10-D prototype centroids, and deployment configurations into exportable bundles.
 
 ---
 
-## 4. Application Walkthrough & Video Demonstrations
+## 4. Application Walkthrough & Demonstrations
 
 The ProsodyLab interface provides interactive phonetics analysis and acoustic metric learning across dedicated workstations:
 
 ### 4.1 Speech Prosody & Lexical Stress Analysis (`/analyze`)
 
-<video src="https://github.com/Sreelm10sj/ProsodyLab/raw/main/docs/assets/analyze.mp4" controls="controls" muted="muted" width="100%"></video>
+![Speech Prosody Analysis Walkthrough](docs/assets/analyze.gif)
 
-> **Analyze Flow Walkthrough:** Demonstrates navigating to the `/analyze` workbench, selecting input modalities (file upload, live microphone recording, or asynchronous batch ZIP processing), uploading a speech file, and running analysis. The interface displays the transcription with word-level prominence highlighting, syllable segmentation with acoustic contrast metrics, pitch contours with DP-MAE stylization, phrase-level intonation, and generates structured JSON/TXT annotations.
+> **Analyze Flow Walkthrough:** Demonstrates navigating to the `/analyze` workbench, selecting input modalities (file upload, live microphone recording, or asynchronous batch ZIP processing), uploading a speech file, and running analysis. The interface displays the transcription with word-level prominence highlighting, syllable segmentation with acoustic contrast metrics, pitch contours with DP-MAE stylization, phrase-level intonation, and generates structured JSON/TXT annotations.  
+> 📹 *Original 1080p recording:* [`docs/assets/analyze.mp4`](docs/assets/analyze.mp4)
 
 ---
 
 ### 4.2 Unsupervised Metric Learning & Model Training (`/train`)
 
-<video src="https://github.com/Sreelm10sj/ProsodyLab/raw/main/docs/assets/train.mp4" controls="controls" muted="muted" width="100%"></video>
+![Model Training Workbench Walkthrough](docs/assets/train.gif)
 
-> **Train Flow Walkthrough:** Demonstrates the self-training workflow on the `/train` workbench. The user uploads a speech dataset archive, scans for defensible acoustic anchor word pairs ($S_{\text{train}}$), executes IDEC metric learning with live epoch and linguistic compliance telemetry, and downloads the trained model bundle and prototype centroids in a deployable ZIP format.
+> **Train Flow Walkthrough:** Demonstrates the self-training workflow on the `/train` workbench. The user uploads a speech dataset archive, scans for defensible acoustic anchor word pairs ($S_{\text{train}}$), executes IDEC metric learning with live epoch and linguistic compliance telemetry, and downloads the trained model bundle and prototype centroids in a deployable ZIP format.  
+> 📹 *Original 1080p recording:* [`docs/assets/train.mp4`](docs/assets/train.mp4)
 
 ---
 
@@ -309,8 +313,10 @@ ProsodyLab/
 │   ├── package.json
 │   └── vite.config.js               # Vite build configuration & API proxy
 ├── docs/                            # Comprehensive technical documentation
-│   ├── assets/                      # Screen walkthrough video assets (silent)
+│   ├── assets/                      # Walkthrough animation & video assets
+│   │   ├── analyze.gif
 │   │   ├── analyze.mp4
+│   │   ├── train.gif
 │   │   └── train.mp4
 │   ├── ARCHITECTURE.md              # Deep system architecture & data flow
 │   ├── API_REFERENCE.md             # Complete OpenAPI REST specification
